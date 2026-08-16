@@ -1,0 +1,14 @@
+case_id: access-offboarding-c
+acceptable_result_categories:
+  - coverage_gap_or_insufficient_evidence
+decisive_clause_sets:
+  - - document_id: contractor_management_policy_v2
+      clause_id: CMP-6.4
+required_findings:
+  - contractor_offboarding_deadline_insufficiently_governed
+forbidden_findings:
+  - no_contractor_policy_exists
+required_scope_distinctions:
+  - employee_and_contractor_coverage
+acceptable_follow_up_needs:
+  - retrieve_population_policy

@@ -27,3 +27,16 @@ investigator described in `docs/current/short-term-scope.md`.
   system's only result contract.
 - Do not broaden the current work into production ingestion, general policy
   search, autonomous policy advice, or corpus-wide absence claims.
+
+## Predecessor-project reference
+
+`/Users/olofskogby/Hobby/agentic-doc-poc/` is the structural predecessor of this
+project. Before introducing a substantial new seam—especially fixture loading,
+hidden-oracle isolation, corpus access, retrieval, evaluation, workflow budgets,
+or local interfaces—inspect the comparable predecessor implementation and tests
+for reusable safety and observability patterns.
+
+Use the predecessor for inspiration and comparison, not as an implementation
+template. Keep this repository's current documentation authoritative, preserve
+the policy-coherence domain model, and do not mechanically copy warranty-specific
+models, fixed evidence-release behavior, prompts, actions, or outcomes.

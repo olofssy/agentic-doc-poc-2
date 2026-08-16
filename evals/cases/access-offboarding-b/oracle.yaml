@@ -1,0 +1,18 @@
+case_id: access-offboarding-b
+acceptable_result_categories:
+  - apparent_conflict_resolved
+decisive_clause_sets:
+  - - document_id: access_control_policy_v4
+      clause_id: ACP-4.2.1
+    - document_id: hr_offboarding_procedure_v3
+      clause_id: HOP-7.3
+    - document_id: identity_definitions_v2
+      clause_id: IDD-2.5
+required_findings:
+  - ordinary_and_privileged_deadlines_have_distinct_scope
+forbidden_findings:
+  - incompatible_employee_revocation_deadlines
+required_scope_distinctions:
+  - ordinary_accounts_vs_privileged_accounts
+acceptable_follow_up_needs:
+  - retrieve_definition

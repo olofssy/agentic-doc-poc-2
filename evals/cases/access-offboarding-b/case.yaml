@@ -1,0 +1,9 @@
+case_id: access-offboarding-b
+corpus_id: access-offboarding-b
+question: >
+  Do our currently effective policies coherently define when employee,
+  contractor, and privileged access must be disabled after termination?
+review_context:
+  as_of_date: 2026-08-16
+  geography: global
+retrieval_budget: 3

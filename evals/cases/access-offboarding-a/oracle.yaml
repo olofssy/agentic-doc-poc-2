@@ -1,0 +1,16 @@
+case_id: access-offboarding-a
+acceptable_result_categories:
+  - confirmed_conflict
+decisive_clause_sets:
+  - - document_id: access_control_policy_v4
+      clause_id: ACP-4.2.1
+    - document_id: contractor_management_policy_v2
+      clause_id: CMP-6.4
+required_findings:
+  - incompatible_contractor_revocation_deadlines
+forbidden_findings:
+  - contractor_coverage_confirmed
+required_scope_distinctions:
+  - contractors_are_workforce_identities
+acceptable_follow_up_needs:
+  - retrieve_definition

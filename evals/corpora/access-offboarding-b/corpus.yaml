@@ -1,0 +1,82 @@
+corpus_id: access-offboarding-b
+documents:
+  - document_id: access_control_policy_v4
+    document_type: policy
+    title: Access Control Policy
+    path: policies/access-control-policy-v4.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: hr_offboarding_procedure_v3
+    document_type: procedure
+    title: HR Offboarding Procedure
+    path: policies/hr-offboarding-procedure-v3.md
+    effective_from: 2025-10-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: identity_definitions_v2
+    document_type: definitions
+    title: Identity and Access Definitions
+    path: policies/identity-definitions-v2.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: governance
+    geography: [global]
+  - document_id: remote_work_policy_v2
+    document_type: policy
+    title: Remote Work Policy
+    path: policies/remote-work-policy-v2.md
+    effective_from: 2025-05-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: contractor_management_policy_v2
+    document_type: policy
+    title: Contractor Management Policy
+    path: policies/contractor-management-policy-v2.md
+    effective_from: 2025-10-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: privileged_access_standard_v2
+    document_type: standard
+    title: Privileged Access Standard
+    path: policies/privileged-access-standard-v2.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: corporate_standard
+    geography: [global]
+  - document_id: emergency_access_procedure_v2
+    document_type: procedure
+    title: Emergency Access Procedure
+    path: policies/emergency-access-procedure-v2.md
+    effective_from: 2025-07-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: facilities_access_policy_v2
+    document_type: policy
+    title: Facilities Access Policy
+    path: policies/facilities-access-policy-v2.md
+    effective_from: 2025-06-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: nordic_access_addendum_v1
+    document_type: addendum
+    title: Nordic Access Addendum
+    path: policies/nordic-access-addendum-v1.md
+    effective_from: 2026-02-01
+    status: current
+    authority_level: local_addendum
+    geography: [sweden, norway, denmark, finland]
+  - document_id: information_retention_policy_v2
+    document_type: policy
+    title: Information Retention Policy
+    path: policies/information-retention-policy-v2.md
+    effective_from: 2025-04-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
