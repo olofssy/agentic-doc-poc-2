@@ -150,6 +150,7 @@ activemq-data/
 # Environments
 .env
 .envrc
+.langgraph_api/
 .venv
 env/
 venv/
@@ -216,3 +217,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Other
+local/
+.DS_Store
+
+# Reproducible generated data and run outputs
+data/generated/*
+!data/generated/.gitkeep
+evals/runs/
+artifacts/
