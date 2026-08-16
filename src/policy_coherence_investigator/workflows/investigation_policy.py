@@ -29,6 +29,9 @@ def route_next_evidence_need(
         return InvestigationRoute.FINISH_HUMAN_ESCALATION
     if remaining_retrieval_budget == 0:
         return InvestigationRoute.FINISH_BUDGET_EXHAUSTED
-    if any(need.kind == evidence_need.kind for need in requested_evidence_needs):
+    if any(
+        (need.kind, need.target) == (evidence_need.kind, evidence_need.target)
+        for need in requested_evidence_needs
+    ):
         return InvestigationRoute.FINISH_REPEATED_NEED
     return InvestigationRoute.FOLLOW_UP_RETRIEVAL

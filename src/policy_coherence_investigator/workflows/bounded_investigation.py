@@ -219,23 +219,20 @@ def _retrieve(
         as_of_date=ledger.working_scope.as_of_date,
         geography=ledger.working_scope.geography,
     )
-    ranked_results = rank_clauses(query, applicable_clauses, limit=retrieval_limit)
-    ranked_clauses = tuple(result.clause for result in ranked_results)
-    updated_ledger = record_retrieval(
-        ledger,
-        query=query,
-        rationale=rationale,
-        returned_clauses=(
-            _reference_for_clause(clause) for clause in ranked_clauses
-        ),
-    )
+    ranked_results = rank_clauses(query, applicable_clauses, limit=len(applicable_clauses))
     known_references = {
         (clause.document.document_id, clause.clause_id) for clause in previously_retrieved
     }
     new_clauses = tuple(
-        clause
-        for clause in ranked_clauses
-        if (clause.document.document_id, clause.clause_id) not in known_references
+        result.clause
+        for result in ranked_results
+        if (result.clause.document.document_id, result.clause.clause_id) not in known_references
+    )[:retrieval_limit]
+    updated_ledger = record_retrieval(
+        ledger,
+        query=query,
+        rationale=rationale,
+        returned_clauses=(_reference_for_clause(clause) for clause in new_clauses),
     )
     return updated_ledger, new_clauses
 

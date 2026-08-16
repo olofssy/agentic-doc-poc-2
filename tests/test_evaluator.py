@@ -56,6 +56,7 @@ def test_evaluator_accepts_a_supported_structured_bounded_trajectory() -> None:
         requested_evidence_needs=[
             EvidenceNeed(
                 kind=EvidenceNeedKind.RETRIEVE_DEFINITION,
+                target="privileged_access_definition",
                 rationale="Account types must be distinguished.",
                 query="privileged access definition",
             )

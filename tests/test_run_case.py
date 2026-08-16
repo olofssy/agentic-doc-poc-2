@@ -40,6 +40,7 @@ def test_compact_case_report_prints_summary_and_issues_without_raw_model_json(ca
         requested_evidence_needs=(
             EvidenceNeed(
                 kind=EvidenceNeedKind.RETRIEVE_POPULATION_POLICY,
+                target="ordinary_privileged_account_policy",
                 rationale="Identify the policy governing the relevant account population.",
                 query="ordinary privileged account population policy",
             ),

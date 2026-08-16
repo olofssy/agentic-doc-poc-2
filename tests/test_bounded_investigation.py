@@ -14,11 +14,18 @@ from policy_coherence_investigator.investigation import (
     InvestigationResult,
     ScopeAssumption,
     WorkingScope,
+    initialize_ledger,
 )
-from policy_coherence_investigator.retrieval import load_policy_corpus
+from policy_coherence_investigator.retrieval import (
+    filter_applicable_clauses,
+    load_policy_corpus,
+    rank_clauses,
+)
 from policy_coherence_investigator.workflows import build_bounded_investigation_graph
+from policy_coherence_investigator.workflows.bounded_investigation import _retrieve
 
 CORPUS_DIRECTORY = Path("evals/corpora/access-offboarding-b")
+CORPUS_A_DIRECTORY = Path("evals/corpora/access-offboarding-a")
 QUESTION = (
     "Do our currently effective policies coherently define when employee, contractor, "
     "and privileged access must be disabled after termination?"
@@ -96,6 +103,47 @@ def test_bounded_graph_stops_when_the_initial_retrieval_uses_the_full_budget() -
     assert state["requested_evidence_needs"] == []
 
 
+def test_follow_up_retrieval_selects_new_clauses_before_applying_its_limit() -> None:
+    corpus = load_policy_corpus(CORPUS_A_DIRECTORY)
+    scope = _scope(["employee", "contractor"])
+    query = "contractor offboarding policies conflict access termination"
+    ranked = rank_clauses(
+        query,
+        filter_applicable_clauses(
+            corpus,
+            as_of_date=scope.as_of_date,
+            geography=scope.geography,
+        ),
+        limit=len(corpus.clauses),
+    )
+    previously_retrieved = tuple(result.clause for result in ranked[:5])
+    expected_new_clauses = tuple(result.clause for result in ranked[5:7])
+    ledger = initialize_ledger(
+        question=QUESTION,
+        working_scope=scope,
+        retrieval_budget=2,
+    )
+
+    updated_ledger, new_clauses = _retrieve(
+        ledger,
+        corpus=corpus,
+        query=query,
+        rationale="Look beyond previously retrieved contractor policy clauses.",
+        retrieval_limit=2,
+        previously_retrieved=previously_retrieved,
+    )
+
+    assert new_clauses == expected_new_clauses
+    assert len(new_clauses) == 2
+    assert updated_ledger.retrieval_history[0].returned_clauses == [
+        EvidenceReference(
+            document_id=clause.document.document_id,
+            clause_id=clause.clause_id,
+        )
+        for clause in expected_new_clauses
+    ]
+
+
 def _scope(populations: list[str]) -> WorkingScope:
     return WorkingScope(
         topic="access revocation after termination",
@@ -144,6 +192,7 @@ def _multi_step_results() -> tuple[InvestigationResult, InvestigationResult]:
         revised_working_scope=_scope(["employee", "contractor"]),
         next_evidence_need=EvidenceNeed(
             kind=EvidenceNeedKind.RETRIEVE_POPULATION_POLICY,
+            target="ordinary_employee_termination_deadline",
             rationale=(
                 "An ordinary-employee policy is needed to compare its deadline with the "
                 "privileged-access rule."

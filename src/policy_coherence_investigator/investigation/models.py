@@ -77,6 +77,7 @@ class EvidenceNeed(StructuredResultModel):
     """A recorded reason for requesting another evidence-gathering action."""
 
     kind: EvidenceNeedKind
+    target: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     rationale: str = Field(min_length=1)
     query: str = Field(min_length=1)
 

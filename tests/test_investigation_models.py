@@ -3,6 +3,8 @@ from pydantic import ValidationError
 
 from policy_coherence_investigator.investigation.models import (
     CoherenceFinding,
+    EvidenceNeed,
+    EvidenceNeedKind,
     EvidenceReference,
     FindingCategory,
     InvestigationResult,
@@ -50,3 +52,12 @@ def test_result_preserves_free_text_and_structured_fields() -> None:
     assert result.unresolved_questions == [
         "Does a local addendum govern this contractor population?"
     ]
+
+
+def test_evidence_need_requires_a_stable_target_identifier() -> None:
+    with pytest.raises(ValidationError, match="target"):
+        EvidenceNeed(
+            kind=EvidenceNeedKind.RETRIEVE_POPULATION_POLICY,
+            rationale="A population-specific deadline is missing.",
+            query="contractor ordinary access deadline",
+        )

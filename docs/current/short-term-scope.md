@@ -71,8 +71,9 @@ before assigning a result category. It must distinguish a genuine scope
 separation from a conflicting permission or duty that applies to the same
 population, and treat missing governing support for an in-scope population as a
 coverage gap rather than a resolved outcome. Follow-up retrieval kinds are used
-at most once per investigation so reworded requests cannot consume the bounded
-budget without pursuing a new evidence direction.
+at most once per evidence target so reworded requests cannot consume the bounded
+budget without pursuing a new evidence direction. A target comprises the
+retrieval kind and a stable identifier for the exact missing evidence.
 
 Use hidden evaluation oracles to verify structured outcomes and trajectories.
 The oracle, expected result category, and human resolution guide must never be

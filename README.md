@@ -9,9 +9,10 @@ precedence, and provide evidence-cited findings for human review.
 
 ## Project status
 
-The repository currently contains the tooling and documentation shell. Domain
-models, synthetic evaluation cases, retrieval, and workflows will be introduced
-incrementally.
+The first bounded vertical slice is implemented: synthetic corpora, clause-level
+retrieval, structured policy-coherence reviews, and explicit paid evaluation
+runners. The next steps focus on improving reliability and usability within the
+same controlled-domain boundary.
 
 ## Local development
 
@@ -25,6 +26,27 @@ uv run ruff check .
 
 Copy `.env.example` to `.env` and set a provider key only when running an
 explicit live evaluation. The deterministic test suite must not call model APIs.
+
+## Investigate a policy question
+
+Run an oracle-free bounded investigation against a controlled corpus:
+
+```bash
+uv run policy-coherence-investigator \
+  --question "Do contractor offboarding policies conflict?" \
+  --corpus evals/corpora/access-offboarding-a \
+  --as-of 2026-08-16 \
+  --geography global \
+  --population employee \
+  --population contractor \
+  --access-type ordinary \
+  --access-type privileged \
+  --provider openai
+```
+
+It prints a JSON response containing the cited structured result and concise
+investigation metadata. Use `--format text` for a compact human-readable view.
+This command can consume tokens and never loads an evaluation oracle.
 
 ## Browse the evaluation cases
 

@@ -55,8 +55,10 @@ Request another evidence need only for a specific material uncertainty. Use
 `retrieve_definition` only when a term's meaning or applicability is unclear;
 use `retrieve_population_policy` when the policy outcome for an in-scope population or access type
 is missing; and use `retrieve_governance` only when authority, precedence, or version could decide
-the result. Do not repeat an evidence-need kind merely by rephrasing its query. State the
-population, access type, and exact unresolved outcome in every follow-up query.
+the result. Set `target` to a concise snake_case identifier for the exact missing evidence, such
+as `contractor_ordinary_access_deadline`. Do not repeat the same `(kind, target)` pair merely by
+rephrasing its query. State the population, access type, and exact unresolved outcome in every
+follow-up query.
 """
 
 

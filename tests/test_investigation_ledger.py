@@ -116,6 +116,7 @@ def test_ledger_projects_structured_findings_without_losing_clause_provenance() 
         unresolved_questions=["Does a local addendum change the applicable deadline?"],
         next_evidence_need=EvidenceNeed(
             kind=EvidenceNeedKind.RETRIEVE_LOCAL_ADDENDUM,
+            target="contractor_access_local_addendum",
             rationale="Local precedence may resolve the apparent conflict.",
             query="contractor access termination local addendum",
         ),
