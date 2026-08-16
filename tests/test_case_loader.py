@@ -7,11 +7,11 @@ from policy_coherence_investigator.case_data import loader
 from policy_coherence_investigator.case_data.loader import (
     CaseDataError,
     CaseManifest,
-    PolicyDocument,
     discover_case_ids,
     load_case,
     load_oracle,
 )
+from policy_coherence_investigator.retrieval import PolicyDocument
 
 
 def test_discovers_three_neutral_case_ids() -> None:
@@ -65,11 +65,12 @@ def test_load_case_does_not_call_oracle_loader(monkeypatch: pytest.MonkeyPatch) 
     assert loaded_case.case.case_id == "access-offboarding-a"
 
 
-def test_load_oracle_requires_an_explicit_evaluator_call() -> None:
-    oracle = load_oracle("access-offboarding-b")
+@pytest.mark.parametrize("case_id", discover_case_ids())
+def test_each_oracle_requires_an_explicit_evaluator_call(case_id: str) -> None:
+    oracle = load_oracle(case_id)
 
-    assert oracle.case_id == "access-offboarding-b"
-    assert oracle.required_scope_distinctions == ["ordinary_accounts_vs_privileged_accounts"]
+    assert oracle.case_id == case_id
+    assert oracle.decisive_clause_sets
 
 
 def test_oracle_document_references_must_exist_in_its_corpus(tmp_path: Path) -> None:

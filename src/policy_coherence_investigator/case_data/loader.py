@@ -11,6 +11,11 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from policy_coherence_investigator.investigation.models import EvidenceReference, FindingCategory
+from policy_coherence_investigator.retrieval.corpus import (
+    CorpusManifest,
+    load_corpus_manifest,
+    load_policy_corpus,
+)
 
 CASE_ID_PATTERN = re.compile(r"^[a-z][a-z0-9-]*$")
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
@@ -24,37 +29,6 @@ class StrictFixtureModel(BaseModel):
     """Reject fields that do not belong to a declared fixture contract."""
 
     model_config = ConfigDict(extra="forbid")
-
-
-class PolicyDocument(StrictFixtureModel):
-    document_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
-    document_type: str = Field(min_length=1)
-    title: str = Field(min_length=1)
-    path: str = Field(min_length=1)
-    effective_from: date
-    status: str = Field(pattern=r"^(current|superseded)$")
-    authority_level: str = Field(min_length=1)
-    geography: list[str] = Field(min_length=1)
-
-    @field_validator("path")
-    @classmethod
-    def path_is_relative(cls, value: str) -> str:
-        path = Path(value)
-        if path.is_absolute() or ".." in path.parts:
-            raise ValueError("document path must stay within its corpus")
-        return value
-
-
-class CorpusManifest(StrictFixtureModel):
-    corpus_id: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
-    documents: list[PolicyDocument] = Field(min_length=1)
-
-    @model_validator(mode="after")
-    def document_ids_are_unique(self) -> CorpusManifest:
-        document_ids = [document.document_id for document in self.documents]
-        if len(set(document_ids)) != len(document_ids):
-            raise ValueError("document IDs must be unique")
-        return self
 
 
 class ReviewContext(StrictFixtureModel):
@@ -122,8 +96,7 @@ def load_case(case_id: str, repository_root: Path = REPOSITORY_ROOT) -> CaseInpu
     case_directory = _case_directory(case_id, repository_root)
     case = _load_yaml_model(case_directory / "case.yaml", CaseManifest)
     corpus_directory = _safe_child(repository_root / "evals" / "corpora", case.corpus_id)
-    corpus = _load_yaml_model(corpus_directory / "corpus.yaml", CorpusManifest)
-    _validate_corpus_document_paths(corpus, corpus_directory)
+    corpus = load_corpus_manifest(corpus_directory)
     return CaseInput(case=case, corpus=corpus)
 
 
@@ -146,6 +119,24 @@ def load_oracle(case_id: str, repository_root: Path = REPOSITORY_ROOT) -> CaseOr
         raise CaseDataError(
             "oracle references document IDs absent from the corpus: "
             f"{sorted(unknown_document_ids)}"
+        )
+    corpus_directory = _safe_child(
+        repository_root / "evals" / "corpora", loaded_case.case.corpus_id
+    )
+    known_clause_references = {
+        (clause.document.document_id, clause.clause_id)
+        for clause in load_policy_corpus(corpus_directory).clauses
+    }
+    unknown_clause_references = {
+        (reference.document_id, reference.clause_id)
+        for clause_set in oracle.decisive_clause_sets
+        for reference in clause_set
+        if (reference.document_id, reference.clause_id) not in known_clause_references
+    }
+    if unknown_clause_references:
+        raise CaseDataError(
+            "oracle references clauses absent from the corpus: "
+            f"{sorted(unknown_clause_references)}"
         )
     return oracle
 
@@ -176,10 +167,3 @@ def _load_yaml_model(path: Path, model_type: type[BaseModel]) -> Any:
         if isinstance(error, CaseDataError):
             raise
         raise CaseDataError(f"invalid fixture file {path.name}: {error}") from error
-
-
-def _validate_corpus_document_paths(corpus: CorpusManifest, corpus_directory: Path) -> None:
-    for document in corpus.documents:
-        document_path = _safe_child(corpus_directory, document.path)
-        if not document_path.is_file():
-            raise CaseDataError(f"document is missing from corpus: {document.path}")
