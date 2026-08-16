@@ -34,11 +34,16 @@ def test_route_stops_for_human_escalation_and_exhausted_budget() -> None:
     ) == InvestigationRoute.FINISH_BUDGET_EXHAUSTED
 
 
-def test_route_rejects_an_identical_repeated_evidence_need() -> None:
-    need = _need()
+def test_route_rejects_a_repeated_evidence_need_kind_even_when_reworded() -> None:
+    first_need = _need()
+    reworded_need = EvidenceNeed(
+        kind=EvidenceNeedKind.RETRIEVE_DEFINITION,
+        rationale="A different phrase for the same unresolved applicability question.",
+        query="population: contractors; access type: ordinary; unresolved: workforce definition",
+    )
 
     assert route_next_evidence_need(
-        need,
+        reworded_need,
         remaining_retrieval_budget=2,
-        requested_evidence_needs=[need],
+        requested_evidence_needs=[first_need],
     ) == InvestigationRoute.FINISH_REPEATED_NEED

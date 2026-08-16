@@ -65,6 +65,13 @@ def test_fixed_review_retrieves_clauses_and_returns_a_valid_structured_result() 
     assert "<clause document_id='access_control_policy_v3'" not in prompt
     assert "<clause document_id='nordic_access_addendum_v1'" not in prompt
     assert "confirmed_conflict" in prompt
+    assert "ordinary_and_privileged_deadlines_have_distinct_scope" in prompt
+    assert "ordinary_accounts_vs_privileged_accounts" in prompt
+    assert "Contractors are within the stated workforce-identity population" in prompt
+    assert "A permission to retain access beyond a deadline is incompatible" in prompt
+    assert "notification, or later review is" in prompt
+    assert "not a disablement deadline" in prompt
+    assert "{finding_ids}" not in prompt
 
 
 def test_fixed_review_rejects_citations_to_clauses_not_retrieved() -> None:

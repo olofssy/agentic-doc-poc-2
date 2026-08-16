@@ -12,5 +12,3 @@ forbidden_findings:
   - contractor_coverage_confirmed
 required_scope_distinctions:
   - contractors_are_workforce_identities
-acceptable_follow_up_needs:
-  - retrieve_definition
