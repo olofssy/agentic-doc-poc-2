@@ -26,6 +26,18 @@ uv run ruff check .
 Copy `.env.example` to `.env` and set a provider key only when running an
 explicit live evaluation. The deterministic test suite must not call model APIs.
 
+## Browse the evaluation cases
+
+Run the human-only local explorer with:
+
+```bash
+uv run policy-coherence-investigator-cases
+```
+
+Open `http://127.0.0.1:8766`. It shows the synthetic corpus, collapsed by
+default, alongside clearly marked demo evaluation notes. It does not run a
+model or evaluation trajectory.
+
 ## Documentation
 
 Read [docs/README.md](docs/README.md) for the documentation authority map.

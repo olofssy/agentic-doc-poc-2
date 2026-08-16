@@ -1,0 +1,115 @@
+# Human-only material used by the local case explorer. The explorer may combine
+# this with oracle data, but neither source may reach investigator prompts or runs.
+cases:
+  - case_id: access-offboarding-a
+    display_name: Contractor deadline conflicts with the workforce rule
+    summary: >
+      This case tests whether the investigator resolves the meaning of workforce
+      identity before comparing a global revocation deadline with a contractor exception.
+    capability_tags:
+      - controlled policy retrieval
+      - terminology and population scope
+      - cross-policy deadline comparison
+      - confirmed-conflict identification
+    resolution_guide: >
+      Compare the workforce revocation deadline with the contractor retention period,
+      then retrieve the definition of workforce identity. The definition makes the two
+      rules concurrently applicable to contractors, so the deadlines are incompatible.
+    document_roles:
+      - document_id: access_control_policy_v4
+        kind: policy_rule
+        explanation: Compare the global workforce revocation requirement.
+      - document_id: contractor_management_policy_v2
+        kind: policy_rule
+        explanation: Compare the contractor-specific retention rule.
+      - document_id: identity_definitions_v2
+        kind: term_definition
+        explanation: Resolve whether contractors are workforce identities.
+    clause_roles:
+      - reference:
+          document_id: access_control_policy_v4
+          clause_id: ACP-4.2.1
+        label: Conflict evidence
+        explanation: Sets the workforce revocation deadline.
+      - reference:
+          document_id: contractor_management_policy_v2
+          clause_id: CMP-6.4
+        label: Conflict evidence
+        explanation: Permits contractor access after termination.
+      - reference:
+          document_id: identity_definitions_v2
+          clause_id: IDD-2.1
+        label: Scope resolver
+        explanation: Establishes that contractors are workforce identities.
+
+  - case_id: access-offboarding-b
+    display_name: Apparent deadline conflict resolves by access type
+    summary: >
+      This case tests whether different revocation deadlines are compared in their
+      proper account-type scope rather than reported as an employee-policy conflict.
+    capability_tags:
+      - controlled policy retrieval
+      - account-type scope distinction
+      - apparent-conflict resolution
+      - targeted definition retrieval
+    resolution_guide: >
+      Compare the privileged-access rule with the ordinary employee-account procedure,
+      then retrieve the privileged-access definition. The rules govern distinct access
+      types and therefore coexist rather than conflict.
+    document_roles:
+      - document_id: access_control_policy_v4
+        kind: policy_rule
+        explanation: Identify the privileged-access revocation requirement.
+      - document_id: hr_offboarding_procedure_v3
+        kind: policy_rule
+        explanation: Identify the ordinary employee-account requirement.
+      - document_id: identity_definitions_v2
+        kind: term_definition
+        explanation: Resolve the boundary between privileged and ordinary access.
+    clause_roles:
+      - reference:
+          document_id: access_control_policy_v4
+          clause_id: ACP-4.2.1
+        label: Privileged-access rule
+        explanation: Requires immediate revocation for privileged access.
+      - reference:
+          document_id: hr_offboarding_procedure_v3
+          clause_id: HOP-7.3
+        label: Ordinary-account rule
+        explanation: Sets a separate ordinary employee-account deadline.
+      - reference:
+          document_id: identity_definitions_v2
+          clause_id: IDD-2.5
+        label: Scope resolver
+        explanation: Distinguishes privileged from ordinary employee access.
+
+  - case_id: access-offboarding-c
+    display_name: Contractor offboarding deadline remains insufficiently governed
+    summary: >
+      This case tests whether the investigator searches contractor material, identifies
+      the missing deadline, and reports qualified insufficiency rather than an absence claim.
+    capability_tags:
+      - controlled policy retrieval
+      - population-specific coverage check
+      - qualified coverage-gap reporting
+      - unsupported-absence prevention
+    resolution_guide: >
+      Retrieve contractor-specific policy material. It establishes a review obligation but
+      no revocation deadline, so the appropriate conclusion is insufficient governance of
+      contractor timing—not that no contractor policy exists.
+    document_roles:
+      - document_id: access_control_policy_v4
+        kind: policy_rule
+        explanation: Establish the employee baseline for the coverage comparison.
+      - document_id: contractor_management_policy_v2
+        kind: policy_rule
+        explanation: Test whether contractor access receives an actual deadline.
+      - document_id: identity_definitions_v2
+        kind: term_definition
+        explanation: Resolve the employee and contractor population distinction.
+    clause_roles:
+      - reference:
+          document_id: contractor_management_policy_v2
+          clause_id: CMP-6.4
+        label: Coverage probe
+        explanation: Governs contractor review but supplies no revocation deadline.
