@@ -6,6 +6,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from .scope import WorkingScope
+
 
 class FindingCategory(StrEnum):
     """The mutually exclusive outcome categories for an investigation."""
@@ -91,6 +93,7 @@ class InvestigationResult(StructuredResultModel):
     summary: str = Field(min_length=1)
     findings: list[CoherenceFinding] = Field(min_length=1)
     scope_assumptions: list[ScopeAssumption] = Field(default_factory=list)
+    revised_working_scope: WorkingScope | None = None
     unresolved_questions: list[str] = Field(default_factory=list)
     next_evidence_need: EvidenceNeed | None = None
 

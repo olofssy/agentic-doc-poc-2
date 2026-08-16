@@ -172,6 +172,7 @@ def apply_review_result(
     open_questions = _unique_text([*ledger.open_questions, *result.unresolved_questions])
     return _replace_ledger(
         ledger,
+        working_scope=result.revised_working_scope or ledger.working_scope,
         scope_assumptions=assumptions,
         candidate_findings=candidate_findings,
         open_questions=open_questions,
