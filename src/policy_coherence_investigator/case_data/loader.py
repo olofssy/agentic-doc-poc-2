@@ -34,6 +34,23 @@ class StrictFixtureModel(BaseModel):
 class ReviewContext(StrictFixtureModel):
     as_of_date: date
     geography: str = Field(min_length=1)
+    populations: list[str] = Field(min_length=1)
+    access_types: list[str] = Field(min_length=1)
+
+    @field_validator("geography")
+    @classmethod
+    def strip_geography(cls, value: str) -> str:
+        return value.strip()
+
+    @field_validator("populations", "access_types")
+    @classmethod
+    def normalize_scope_values(cls, values: list[str]) -> list[str]:
+        normalized = [value.strip() for value in values if value.strip()]
+        if len(normalized) != len(set(normalized)):
+            raise ValueError("review-context scope values must be unique")
+        if not normalized:
+            raise ValueError("review-context scope values must not be blank")
+        return normalized
 
 
 class CaseManifest(StrictFixtureModel):

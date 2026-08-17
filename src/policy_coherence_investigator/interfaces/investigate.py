@@ -35,6 +35,7 @@ class InvestigationRunReport:
     retrieval_budget: int
     requested_evidence_needs: tuple[EvidenceNeed, ...]
     termination_reason: str
+    ledger: InvestigationLedger | None = None
 
     def as_dict(self) -> dict[str, object]:
         """Return stable structured output without prompts, hidden data, or raw graph state."""
@@ -121,6 +122,7 @@ def run_investigation(
         retrieval_budget=retrieval_budget,
         requested_evidence_needs=tuple(state.get("requested_evidence_needs", ())),
         termination_reason=state.get("termination_reason", "unknown"),
+        ledger=ledger,
     )
 
 

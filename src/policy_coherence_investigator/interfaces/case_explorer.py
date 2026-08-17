@@ -83,14 +83,13 @@ class PresentationCase(StrictPresentationModel):
 
     case_id: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
     display_name: str = Field(min_length=1)
-    review_question: str = Field(min_length=1)
     summary: str = Field(min_length=1)
     capability_tags: list[str] = Field(min_length=1)
     resolution_guide: str = Field(min_length=1)
     document_roles: list[PresentationDocumentRole] = Field(default_factory=list)
     clause_roles: list[PresentationClauseRole] = Field(default_factory=list)
 
-    @field_validator("display_name", "review_question", "summary", "resolution_guide")
+    @field_validator("display_name", "summary", "resolution_guide")
     @classmethod
     def strip_text(cls, value: str) -> str:
         return value.strip()
@@ -360,7 +359,7 @@ def render_case_details(explorer_case: ExplorerCase) -> str:
 <h2>{html.escape(presentation.display_name)}</h2>
 <p class="summary">{html.escape(presentation.summary)}</p>
 <section class="cards">
-  <div class="card"><h4>Review question</h4><p>{html.escape(presentation.review_question)}</p></div>
+  <div class="card"><h4>Review question</h4><p>{html.escape(case.question)}</p></div>
   <div class="card"><h4>Review context</h4><p>As of {case.review_context.as_of_date.isoformat()}<br>
     Geography: {html.escape(case.review_context.geography)}</p></div>
   <div class="card"><h4>Retrieval budget</h4><p>{case.retrieval_budget} iterations</p></div>

@@ -59,6 +59,7 @@ def test_run_investigation_uses_the_supplied_question_and_scope_without_an_oracl
     assert initial_state["working_scope"].populations == ["contractor"]
     assert initial_state["working_scope"].access_types == ["ordinary"]
     assert report.retrieval_count == 1
+    assert report.ledger == _ledger()
 
 
 def test_json_report_contains_the_structured_result_and_concise_metadata(capsys) -> None:

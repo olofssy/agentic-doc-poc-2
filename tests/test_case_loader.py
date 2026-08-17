@@ -29,7 +29,12 @@ def test_case_manifest_rejects_human_or_oracle_fields() -> None:
                 "case_id": "access-offboarding-z",
                 "corpus_id": "access-offboarding-z",
                 "question": "Are the policies coherent?",
-                "review_context": {"as_of_date": "2026-08-16", "geography": "global"},
+                "review_context": {
+                    "as_of_date": "2026-08-16",
+                    "geography": "global",
+                    "populations": ["employee"],
+                    "access_types": ["ordinary"],
+                },
                 "retrieval_budget": 3,
                 "expected_outcome": "confirmed_conflict",
             }
@@ -86,6 +91,8 @@ question: Are the policies coherent?
 review_context:
   as_of_date: 2026-08-16
   geography: global
+  populations: [employee]
+  access_types: [ordinary]
 retrieval_budget: 3
 """,
         encoding="utf-8",

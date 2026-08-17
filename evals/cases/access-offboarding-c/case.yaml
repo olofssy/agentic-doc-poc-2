@@ -1,9 +1,11 @@
 case_id: access-offboarding-c
 corpus_id: access-offboarding-c
 question: >
-  Do our currently effective policies coherently define when employee,
-  contractor, and privileged access must be disabled after termination?
+  Do current policies coherently govern ordinary employee and contractor
+  access-revocation timing after offboarding?
 review_context:
   as_of_date: 2026-08-16
   geography: global
+  populations: [employee, contractor]
+  access_types: [ordinary]
 retrieval_budget: 3

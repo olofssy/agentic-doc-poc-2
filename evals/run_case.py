@@ -174,8 +174,8 @@ def _initial_working_scope(question: str, review_context) -> WorkingScope:
 
     return WorkingScope(
         topic=question,
-        populations=["employee", "contractor"],
-        access_types=["ordinary", "privileged"],
+        populations=review_context.populations,
+        access_types=review_context.access_types,
         geography=review_context.geography,
         as_of_date=review_context.as_of_date,
     )
