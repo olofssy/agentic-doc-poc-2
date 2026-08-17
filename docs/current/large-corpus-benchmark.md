@@ -41,3 +41,7 @@ front of any lexical, vector, or hybrid ranking strategy.
 4. Compare retrieval recall, end-to-end evaluation outcome, retrieval iterations,
    latency, and cost. Do not claim an embedding improvement without this
    comparison.
+
+See the [retrieval evolution plan](retrieval-evolution-plan.md) for the detailed
+implementation sequence, vector-baseline design, and production-boundary
+assessment.

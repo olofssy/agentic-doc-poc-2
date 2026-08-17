@@ -10,6 +10,7 @@ Current authoritative project brief:
 - [Short-term implementation scope](current/short-term-scope.md)
 - [Structured-output vocabulary](current/structured-output-vocabulary.md)
 - [Large-corpus retrieval benchmark](current/large-corpus-benchmark.md)
+- [Retrieval evolution plan](current/retrieval-evolution-plan.md)
 
 The root-level `suggested-project-layout.md` is bootstrap guidance, not a domain
 requirement or implementation contract.
