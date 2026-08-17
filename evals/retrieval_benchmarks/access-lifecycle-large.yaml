@@ -1,0 +1,45 @@
+benchmark_id: access-lifecycle-large-lexical-baseline
+corpus_id: access-lifecycle-large
+scenarios:
+  - scenario_id: agency-handover-conflict
+    question: >
+      May an agency worker keep a workspace credential for handover after an
+      assignment ends?
+    as_of_date: 2026-08-16
+    geography: global
+    top_k: 5
+    required_references:
+      - document_id: enterprise_identity_policy_v7
+        clause_id: EIP-3.1
+      - document_id: contingent_workforce_standard_v4
+        clause_id: CWS-5.2
+      - document_id: identity_taxonomy_v5
+        clause_id: ITX-1.1
+      - document_id: identity_taxonomy_v5
+        clause_id: ITX-1.4
+  - scenario_id: sweden-local-deadline
+    question: >
+      What deadline applies to an employee's ordinary workspace credential when
+      employment ends in Sweden?
+    as_of_date: 2026-08-16
+    geography: sweden
+    top_k: 5
+    required_references:
+      - document_id: sweden_employment_addendum_v3
+        clause_id: SEA-6.1
+      - document_id: sweden_employment_addendum_v3
+        clause_id: SEA-6.2
+      - document_id: access_governance_standard_v3
+        clause_id: AGS-2.2
+      - document_id: corporate_policy_hierarchy_v2
+        clause_id: CPH-1.1
+  - scenario_id: superseded-policy-filter
+    question: >
+      What is the current global deadline for deactivating an employment-
+      affiliated security principal after separation?
+    as_of_date: 2026-08-16
+    geography: global
+    top_k: 3
+    required_references:
+      - document_id: enterprise_identity_policy_v7
+        clause_id: EIP-3.1

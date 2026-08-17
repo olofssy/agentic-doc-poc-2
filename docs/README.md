@@ -9,6 +9,7 @@ Current authoritative project brief:
 - [Project inception](current/project-inception.md)
 - [Short-term implementation scope](current/short-term-scope.md)
 - [Structured-output vocabulary](current/structured-output-vocabulary.md)
+- [Large-corpus retrieval benchmark](current/large-corpus-benchmark.md)
 
 The root-level `suggested-project-layout.md` is bootstrap guidance, not a domain
 requirement or implementation contract.

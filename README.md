@@ -48,6 +48,15 @@ It prints a JSON response containing the cited structured result and concise
 investigation metadata. Use `--format text` for a compact human-readable view.
 This command can consume tokens and never loads an evaluation oracle.
 
+## Measure the retrieval baseline
+
+The large controlled corpus has a deterministic, provider-free retrieval
+benchmark. Run it before comparing a vector or hybrid retriever:
+
+```bash
+uv run python -m evals.run_retrieval_benchmark
+```
+
 ## Use the local investigation workbench
 
 Run the combined human case explorer and single-shot investigation interface:

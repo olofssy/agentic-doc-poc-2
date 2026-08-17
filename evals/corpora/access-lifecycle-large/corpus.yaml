@@ -1,0 +1,194 @@
+corpus_id: access-lifecycle-large
+documents:
+  - document_id: enterprise_identity_policy_v7
+    document_type: policy
+    title: Enterprise Identity Policy
+    path: policies/enterprise-identity-policy-v7.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: contingent_workforce_standard_v4
+    document_type: standard
+    title: Contingent Workforce Standard
+    path: policies/contingent-workforce-standard-v4.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: corporate_standard
+    geography: [global]
+  - document_id: identity_taxonomy_v5
+    document_type: definitions
+    title: Identity Taxonomy
+    path: policies/identity-taxonomy-v5.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: governance
+    geography: [global]
+  - document_id: offboarding_operations_v6
+    document_type: procedure
+    title: Offboarding Operations Procedure
+    path: policies/offboarding-operations-v6.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: privileged_access_standard_v5
+    document_type: standard
+    title: Privileged Access Standard
+    path: policies/privileged-access-standard-v5.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: corporate_standard
+    geography: [global]
+  - document_id: access_governance_standard_v3
+    document_type: governance
+    title: Access Governance Standard
+    path: policies/access-governance-standard-v3.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: governance
+    geography: [global]
+  - document_id: sweden_employment_addendum_v3
+    document_type: addendum
+    title: Sweden Employment Access Addendum
+    path: policies/sweden-employment-addendum-v3.md
+    effective_from: 2026-02-01
+    status: current
+    authority_level: local_addendum
+    geography: [sweden]
+  - document_id: nordic_identity_addendum_v2
+    document_type: addendum
+    title: Nordic Identity Addendum
+    path: policies/nordic-identity-addendum-v2.md
+    effective_from: 2026-02-01
+    status: current
+    authority_level: local_addendum
+    geography: [sweden, norway, denmark, finland]
+  - document_id: corporate_policy_hierarchy_v2
+    document_type: governance
+    title: Corporate Policy Hierarchy
+    path: policies/corporate-policy-hierarchy-v2.md
+    effective_from: 2026-01-01
+    status: current
+    authority_level: governance
+    geography: [global]
+  - document_id: enterprise_identity_policy_v6
+    document_type: policy
+    title: Enterprise Identity Policy
+    path: policies/enterprise-identity-policy-v6.md
+    effective_from: 2024-01-01
+    status: superseded
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: vendor_service_management_v3
+    document_type: procedure
+    title: Vendor Service Management Procedure
+    path: policies/vendor-service-management-v3.md
+    effective_from: 2025-09-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: partner_portal_standard_v2
+    document_type: standard
+    title: Partner Portal Standard
+    path: policies/partner-portal-standard-v2.md
+    effective_from: 2025-11-01
+    status: current
+    authority_level: corporate_standard
+    geography: [global]
+  - document_id: application_access_control_v4
+    document_type: policy
+    title: Application Access Control Policy
+    path: policies/application-access-control-v4.md
+    effective_from: 2025-10-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: physical_credentials_v4
+    document_type: policy
+    title: Physical Credentials Policy
+    path: policies/physical-credentials-v4.md
+    effective_from: 2025-08-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: device_return_v3
+    document_type: procedure
+    title: Device Return Procedure
+    path: policies/device-return-v3.md
+    effective_from: 2025-07-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: remote_working_v4
+    document_type: policy
+    title: Remote Working Policy
+    path: policies/remote-working-v4.md
+    effective_from: 2025-05-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: records_retention_v3
+    document_type: policy
+    title: Records Retention Policy
+    path: policies/records-retention-v3.md
+    effective_from: 2025-06-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: security_incident_v5
+    document_type: procedure
+    title: Security Incident Procedure
+    path: policies/security-incident-v5.md
+    effective_from: 2025-12-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: emergency_identity_v2
+    document_type: procedure
+    title: Emergency Identity Procedure
+    path: policies/emergency-identity-v2.md
+    effective_from: 2025-12-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: business_continuity_v3
+    document_type: policy
+    title: Business Continuity Policy
+    path: policies/business-continuity-v3.md
+    effective_from: 2025-07-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: project_closeout_v3
+    document_type: procedure
+    title: Project Closeout Procedure
+    path: policies/project-closeout-v3.md
+    effective_from: 2025-09-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: procurement_supplier_v4
+    document_type: policy
+    title: Procurement Supplier Policy
+    path: policies/procurement-supplier-v4.md
+    effective_from: 2025-04-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
+  - document_id: training_access_v2
+    document_type: procedure
+    title: Training Access Procedure
+    path: policies/training-access-v2.md
+    effective_from: 2025-08-01
+    status: current
+    authority_level: procedure
+    geography: [global]
+  - document_id: workplace_safety_v2
+    document_type: policy
+    title: Workplace Safety Policy
+    path: policies/workplace-safety-v2.md
+    effective_from: 2025-07-01
+    status: current
+    authority_level: corporate_policy
+    geography: [global]
