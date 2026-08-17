@@ -3,6 +3,9 @@
 cases:
   - case_id: access-offboarding-a
     display_name: Contractor deadline conflicts with the workforce rule
+    review_question: >
+      Do workforce and contractor policies impose incompatible access-revocation
+      deadlines after contractor termination?
     summary: >
       This case tests whether the investigator resolves the meaning of workforce
       identity before comparing a global revocation deadline with a contractor exception.
@@ -44,6 +47,9 @@ cases:
 
   - case_id: access-offboarding-b
     display_name: Apparent deadline conflict resolves by access type
+    review_question: >
+      Do the ordinary-employee and privileged-account revocation deadlines conflict,
+      or do they govern distinct access types?
     summary: >
       This case tests whether different revocation deadlines are compared in their
       proper account-type scope rather than reported as an employee-policy conflict.
@@ -85,6 +91,9 @@ cases:
 
   - case_id: access-offboarding-c
     display_name: Contractor offboarding deadline remains insufficiently governed
+    review_question: >
+      Do currently effective policies adequately govern the contractor access-revocation
+      deadline after offboarding?
     summary: >
       This case tests whether the investigator searches contractor material, identifies
       the missing deadline, and reports qualified insufficiency rather than an absence claim.

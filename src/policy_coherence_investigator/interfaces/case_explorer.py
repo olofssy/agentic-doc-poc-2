@@ -83,13 +83,14 @@ class PresentationCase(StrictPresentationModel):
 
     case_id: str = Field(pattern=r"^[a-z][a-z0-9-]*$")
     display_name: str = Field(min_length=1)
+    review_question: str = Field(min_length=1)
     summary: str = Field(min_length=1)
     capability_tags: list[str] = Field(min_length=1)
     resolution_guide: str = Field(min_length=1)
     document_roles: list[PresentationDocumentRole] = Field(default_factory=list)
     clause_roles: list[PresentationClauseRole] = Field(default_factory=list)
 
-    @field_validator("display_name", "summary", "resolution_guide")
+    @field_validator("display_name", "review_question", "summary", "resolution_guide")
     @classmethod
     def strip_text(cls, value: str) -> str:
         return value.strip()
@@ -189,7 +190,7 @@ def render_explorer_page(
     selected_case = next(
         (case for case in cases if case.presentation.case_id == selected_case_id), cases[0]
     )
-    sidebar = "".join(_render_case_link(case, case is selected_case) for case in cases)
+    sidebar = "".join(render_case_link(case, case is selected_case) for case in cases)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -252,7 +253,7 @@ def render_explorer_page(
       <p>Read-only synthetic policy-coherence cases for a human demo audience.</p>
       {sidebar}
     </nav>
-    <article>{_render_case(selected_case)}</article>
+    <article>{render_case_details(selected_case)}</article>
   </main>
 </body>
 </html>"""
@@ -335,7 +336,9 @@ def _validate_presentation_roles(explorer_case: ExplorerCase) -> None:
         )
 
 
-def _render_case_link(explorer_case: ExplorerCase, selected: bool) -> str:
+def render_case_link(explorer_case: ExplorerCase, selected: bool) -> str:
+    """Render one case-navigation link for a human-facing local interface."""
+
     presentation = explorer_case.presentation
     current = " current" if selected else ""
     case_id = html.escape(presentation.case_id, quote=True)
@@ -346,7 +349,9 @@ def _render_case_link(explorer_case: ExplorerCase, selected: bool) -> str:
     )
 
 
-def _render_case(explorer_case: ExplorerCase) -> str:
+def render_case_details(explorer_case: ExplorerCase) -> str:
+    """Render the selected case, including intentional human-only demo annotations."""
+
     presentation = explorer_case.presentation
     case = explorer_case.case_input.case
     tags = "".join(f"<li>{html.escape(tag)}</li>" for tag in presentation.capability_tags)
@@ -355,7 +360,7 @@ def _render_case(explorer_case: ExplorerCase) -> str:
 <h2>{html.escape(presentation.display_name)}</h2>
 <p class="summary">{html.escape(presentation.summary)}</p>
 <section class="cards">
-  <div class="card"><h4>Review question</h4><p>{html.escape(case.question)}</p></div>
+  <div class="card"><h4>Review question</h4><p>{html.escape(presentation.review_question)}</p></div>
   <div class="card"><h4>Review context</h4><p>As of {case.review_context.as_of_date.isoformat()}<br>
     Geography: {html.escape(case.review_context.geography)}</p></div>
   <div class="card"><h4>Retrieval budget</h4><p>{case.retrieval_budget} iterations</p></div>
@@ -420,7 +425,8 @@ def _render_document(document: LoadedPolicyDocument, explorer_case: ExplorerCase
     clauses = "".join(_render_clause(clause, explorer_case) for clause in document.clauses)
     return f"""
 <details class="policy-document">
-  <summary>{html.escape(manifest.title)}
+  <summary>
+    <span id="{html.escape(manifest.document_id, quote=True)}">{html.escape(manifest.title)}</span>
     <span>({html.escape(manifest.document_id)})</span>{retrieval_badge}</summary>
   <div class="document-body"><div class="badges">{metadata_badges}</div>{clauses}</div>
 </details>
@@ -438,7 +444,7 @@ def _render_clause(clause: PolicyClause, explorer_case: ExplorerCase) -> str:
             badges.append(_badge(role.label, "role"))
             badges.append(_badge(role.explanation, "meta"))
     return f"""
-<section class="clause">
+<section class="clause" id="{html.escape(f'{document_id}--{clause_id}', quote=True)}">
   <strong>{html.escape(clause_id)} — {html.escape(clause.heading)}</strong>
   <div class="badges">{''.join(badges)}</div>
   <p>{html.escape(clause.content)}</p>

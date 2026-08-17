@@ -17,6 +17,7 @@ dependencies = [
 [project.scripts]
 policy-coherence-investigator = "policy_coherence_investigator.interfaces.investigate:main"
 policy-coherence-investigator-cases = "policy_coherence_investigator.interfaces.case_explorer:main"
+policy-coherence-investigator-workbench = "policy_coherence_investigator.interfaces.workbench:main"
 
 [build-system]
 requires = ["uv_build>=0.12.4,<0.13.0"]

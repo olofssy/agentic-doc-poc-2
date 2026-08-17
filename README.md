@@ -48,6 +48,20 @@ It prints a JSON response containing the cited structured result and concise
 investigation metadata. Use `--format text` for a compact human-readable view.
 This command can consume tokens and never loads an evaluation oracle.
 
+## Use the local investigation workbench
+
+Run the combined human case explorer and single-shot investigation interface:
+
+```bash
+uv run policy-coherence-investigator-workbench --provider openai
+```
+
+Open `http://127.0.0.1:8767`. Selecting a case sets its controlled corpus,
+question, date, geography, and retrieval budget. The investigation panel lets
+you edit the question and scope defaults before explicitly running one bounded
+review. The explorer's oracle-backed demo notes remain page-only and are never
+supplied to the investigator.
+
 ## Browse the evaluation cases
 
 Run the human-only local explorer with:
