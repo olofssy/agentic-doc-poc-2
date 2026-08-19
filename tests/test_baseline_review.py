@@ -13,6 +13,7 @@ from policy_coherence_investigator.investigation import (
     EvidenceReference,
     FindingCategory,
     InvestigationResult,
+    WorkingScope,
 )
 from policy_coherence_investigator.retrieval import load_policy_corpus
 from policy_coherence_investigator.workflows import build_fixed_review_graph
@@ -22,6 +23,16 @@ QUESTION = (
     "Do our currently effective policies coherently define when employee, contractor, "
     "and privileged access must be disabled after termination?"
 )
+
+
+def _scope() -> WorkingScope:
+    return WorkingScope(
+        topic=QUESTION,
+        populations=["employee", "contractor"],
+        access_types=["ordinary", "privileged"],
+        geography="global",
+        as_of_date=date(2026, 8, 16),
+    )
 
 
 class RecordingStructuredModel:
@@ -45,8 +56,7 @@ def test_fixed_review_retrieves_clauses_and_returns_a_valid_structured_result() 
     state = graph.invoke(
         {
             "question": QUESTION,
-            "as_of_date": date(2026, 8, 16),
-            "geography": "global",
+            "working_scope": _scope(),
             "retrieval_limit": 5,
         }
     )
@@ -90,8 +100,7 @@ def test_fixed_review_rejects_citations_to_clauses_not_retrieved() -> None:
         graph.invoke(
             {
                 "question": QUESTION,
-                "as_of_date": date(2026, 8, 16),
-                "geography": "global",
+                "working_scope": _scope(),
             }
         )
 

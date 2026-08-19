@@ -2,7 +2,7 @@
 
 import argparse
 import textwrap
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -21,6 +21,8 @@ from policy_coherence_investigator.investigation import (
     WorkingScope,
 )
 from policy_coherence_investigator.retrieval import (
+    ClauseRetriever,
+    LexicalClauseRetriever,
     PolicyClause,
     PolicyCorpus,
     load_policy_corpus,
@@ -53,7 +55,7 @@ class CaseRunReport:
 
 
 @dataclass(frozen=True)
-class ArchitectureRun:
+class ArchitectureOutcome:
     """One architecture's raw graph outcome, before oracle-based evaluation."""
 
     result: InvestigationResult | None
@@ -72,17 +74,17 @@ def run_case(
 ) -> CaseRunReport:
     """Invoke one architecture, then load the hidden oracle only for evaluation."""
 
-    if architecture not in Architecture:
+    if architecture not in _ARCHITECTURE_RUNNERS:
         raise ValueError(f"unsupported architecture: {architecture!r}")
     case = load_case(case_id)
     corpus = load_policy_corpus(_corpus_directory(case.case.corpus_id))
     model = build_chat_model(provider)
+    # Every architecture must retrieve through the same retriever, or a result
+    # difference could reflect a retrieval-quality gap rather than the
+    # architecture's own trajectory.
+    retriever = LexicalClauseRetriever()
 
-    run = (
-        _run_baseline_architecture(model, corpus, case)
-        if architecture == Architecture.BASELINE
-        else _run_bounded_architecture(model, corpus, case)
-    )
+    run = _ARCHITECTURE_RUNNERS[architecture](model, corpus, case, retriever)
 
     # The graph has completed; only the evaluator may now inspect hidden expectations.
     oracle = load_oracle(case_id)
@@ -113,22 +115,19 @@ def run_case(
     )
 
 
-def _run_baseline_architecture(
+def _run_fixed_retrieve_and_compare_architecture(
     model: BaseChatModel,
     corpus: PolicyCorpus,
     case: CaseInput,
-) -> ArchitectureRun:
+    retriever: ClauseRetriever,
+) -> ArchitectureOutcome:
     """Invoke the fixed retrieve-and-compare baseline for one case."""
 
-    state = build_fixed_review_graph(model, corpus).invoke(
-        {
-            "question": case.case.question,
-            "as_of_date": case.case.review_context.as_of_date,
-            "geography": case.case.review_context.geography,
-        },
+    state = build_fixed_review_graph(model, corpus, retriever=retriever).invoke(
+        _base_invoke_args(case),
         config=_run_config(case.case.case_id, Architecture.BASELINE),
     )
-    return ArchitectureRun(
+    return ArchitectureOutcome(
         result=InvestigationResult.model_validate(state["result"]),
         retrieved_clauses=tuple(state["retrieved_clauses"]),
         ledger=None,
@@ -138,22 +137,16 @@ def _run_baseline_architecture(
     )
 
 
-def _run_bounded_architecture(
+def _run_bounded_evidence_driven_architecture(
     model: BaseChatModel,
     corpus: PolicyCorpus,
     case: CaseInput,
-) -> ArchitectureRun:
+    retriever: ClauseRetriever,
+) -> ArchitectureOutcome:
     """Invoke the bounded, evidence-driven investigation for one case."""
 
-    state = build_bounded_investigation_graph(model, corpus).invoke(
-        {
-            "question": case.case.question,
-            "working_scope": _initial_working_scope(
-                case.case.question,
-                case.case.review_context,
-            ),
-            "retrieval_budget": case.case.retrieval_budget,
-        },
+    state = build_bounded_investigation_graph(model, corpus, retriever=retriever).invoke(
+        {**_base_invoke_args(case), "retrieval_budget": case.case.retrieval_budget},
         config=_run_config(case.case.case_id, Architecture.BOUNDED),
     )
     result = (
@@ -166,7 +159,7 @@ def _run_bounded_architecture(
         if "investigation_ledger" in state
         else None
     )
-    return ArchitectureRun(
+    return ArchitectureOutcome(
         result=result,
         retrieved_clauses=tuple(state.get("retrieved_clauses", ())),
         ledger=ledger,
@@ -174,6 +167,16 @@ def _run_bounded_architecture(
         termination_reason=state.get("termination_reason", "unknown"),
         requested_evidence_needs=tuple(state.get("requested_evidence_needs", ())),
     )
+
+
+# Add a new Architecture member and its runner here to support another architecture.
+_ARCHITECTURE_RUNNERS: dict[
+    Architecture,
+    Callable[[BaseChatModel, PolicyCorpus, CaseInput, ClauseRetriever], ArchitectureOutcome],
+] = {
+    Architecture.BASELINE: _run_fixed_retrieve_and_compare_architecture,
+    Architecture.BOUNDED: _run_bounded_evidence_driven_architecture,
+}
 
 
 def print_case_report(report: CaseRunReport) -> None:
@@ -230,6 +233,15 @@ def _initial_working_scope(question: str, review_context) -> WorkingScope:
         geography=review_context.geography,
         as_of_date=review_context.as_of_date,
     )
+
+
+def _base_invoke_args(case: CaseInput) -> dict[str, object]:
+    """Return the question and working scope every architecture starts a case with."""
+
+    return {
+        "question": case.case.question,
+        "working_scope": _initial_working_scope(case.case.question, case.case.review_context),
+    }
 
 
 def _run_config(case_id: str, architecture: Architecture) -> dict[str, object]:

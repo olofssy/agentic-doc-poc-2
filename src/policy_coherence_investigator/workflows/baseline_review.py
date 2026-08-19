@@ -1,6 +1,5 @@
 """Fixed retrieve-and-compare baseline for policy-coherence evaluation."""
 
-from datetime import date
 from typing import NotRequired, TypedDict, cast
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -11,6 +10,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from policy_coherence_investigator.investigation.models import InvestigationResult
 from policy_coherence_investigator.investigation.prompts import build_fixed_review_messages
+from policy_coherence_investigator.investigation.scope import WorkingScope
 from policy_coherence_investigator.investigation.validation import validate_result_citations
 from policy_coherence_investigator.retrieval import (
     DEFAULT_RETRIEVAL_LIMIT,
@@ -23,11 +23,15 @@ from policy_coherence_investigator.retrieval import (
 
 
 class FixedReviewState(TypedDict):
-    """Input, retrieved evidence, and result for the one-pass baseline."""
+    """Input, retrieved evidence, and result for the one-pass baseline.
+
+    Shares the ``question``/``working_scope`` shape with ``BoundedInvestigationState``
+    so both architectures start from identical scope context; only the bounded
+    workflow adds a retrieval budget and a follow-up loop.
+    """
 
     question: str
-    as_of_date: date
-    geography: str
+    working_scope: WorkingScope
     retrieval_limit: NotRequired[int]
     retrieved_clauses: NotRequired[tuple[PolicyClause, ...]]
     result: NotRequired[InvestigationResult]
@@ -49,10 +53,11 @@ def build_fixed_review_graph(
     )
 
     def retrieve_and_review(state: FixedReviewState) -> dict[str, object]:
+        working_scope = state["working_scope"]
         applicable_clauses = filter_applicable_clauses(
             corpus,
-            as_of_date=state["as_of_date"],
-            geography=state["geography"],
+            as_of_date=working_scope.as_of_date,
+            geography=working_scope.geography,
         )
         ranked_clauses = selected_retriever.rank(
             state["question"],
@@ -62,6 +67,7 @@ def build_fixed_review_graph(
         retrieved_clauses = tuple(result.clause for result in ranked_clauses)
         messages = build_fixed_review_messages(
             question=state["question"],
+            working_scope=working_scope,
             retrieved_clauses=retrieved_clauses,
         )
         result = structured_model.invoke(messages)
