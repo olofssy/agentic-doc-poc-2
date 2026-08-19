@@ -5,16 +5,21 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from time import perf_counter
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from policy_coherence_investigator.investigation import EvidenceReference
 from policy_coherence_investigator.retrieval import (
+    ClauseRetriever,
+    DeterministicEmbeddingClient,
+    EmbeddingClient,
+    LexicalClauseRetriever,
     PolicyCorpus,
+    build_vector_retriever,
     filter_applicable_clauses,
     load_policy_corpus,
-    rank_clauses,
 )
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
@@ -62,6 +67,7 @@ class RetrievalScenarioScore:
     required_references: tuple[EvidenceReference, ...]
     retrieved_references: tuple[EvidenceReference, ...]
     ranks: dict[tuple[str, str], int | None]
+    query_latency_ms: float
 
     @property
     def recall(self) -> float:
@@ -86,11 +92,24 @@ def load_retrieval_benchmark(path: Path = DEFAULT_BENCHMARK_PATH) -> RetrievalBe
     return RetrievalBenchmark.model_validate(contents)
 
 
-def evaluate_lexical_benchmark(
+@dataclass(frozen=True)
+class RetrievalBenchmarkRun:
+    """Transparent benchmark result for one interchangeable clause retriever."""
+
+    retriever_name: str
+    embedding_model_id: str | None
+    index_build_ms: float | None
+    estimated_embedding_cost: float | None
+    estimated_query_cost: float | None
+    scores: tuple[RetrievalScenarioScore, ...]
+
+
+def evaluate_retrieval_benchmark(
     benchmark: RetrievalBenchmark,
     corpus: PolicyCorpus,
+    retriever: ClauseRetriever,
 ) -> tuple[RetrievalScenarioScore, ...]:
-    """Measure the deterministic lexical baseline without involving a model provider."""
+    """Measure one retriever after deterministic applicability filtering."""
 
     if benchmark.corpus_id != corpus.corpus_id:
         raise ValueError("benchmark corpus_id must match the loaded corpus")
@@ -102,11 +121,13 @@ def evaluate_lexical_benchmark(
             as_of_date=scenario.as_of_date,
             geography=scenario.geography,
         )
-        all_ranked = rank_clauses(
+        started = perf_counter()
+        all_ranked = retriever.rank(
             scenario.question,
             applicable_clauses,
             limit=len(applicable_clauses),
         )
+        query_latency_ms = (perf_counter() - started) * 1_000
         ranks = {
             (reference.document_id, reference.clause_id): next(
                 (
@@ -135,9 +156,46 @@ def evaluate_lexical_benchmark(
                     for result in all_ranked[: scenario.top_k]
                 ),
                 ranks=ranks,
+                query_latency_ms=query_latency_ms,
             )
         )
     return tuple(scores)
+
+
+def evaluate_lexical_benchmark(
+    benchmark: RetrievalBenchmark,
+    corpus: PolicyCorpus,
+) -> tuple[RetrievalScenarioScore, ...]:
+    """Measure the deterministic lexical baseline without involving a model provider."""
+
+    return evaluate_retrieval_benchmark(benchmark, corpus, LexicalClauseRetriever())
+
+
+def evaluate_vector_benchmark(
+    benchmark: RetrievalBenchmark,
+    corpus: PolicyCorpus,
+    *,
+    embedding_client: EmbeddingClient | None = None,
+    cache_path: Path | None = None,
+) -> RetrievalBenchmarkRun:
+    """Measure the local vector baseline with an offline deterministic embedding fake."""
+
+    if benchmark.corpus_id != corpus.corpus_id:
+        raise ValueError("benchmark corpus_id must match the loaded corpus")
+    client = embedding_client or DeterministicEmbeddingClient()
+    retriever, build_seconds = build_vector_retriever(
+        corpus.clauses,
+        client,
+        cache_path=cache_path,
+    )
+    return RetrievalBenchmarkRun(
+        retriever_name="vector",
+        embedding_model_id=client.model_id,
+        index_build_ms=build_seconds * 1_000,
+        estimated_embedding_cost=None,
+        estimated_query_cost=None,
+        scores=evaluate_retrieval_benchmark(benchmark, corpus, retriever),
+    )
 
 
 def load_default_lexical_scores() -> tuple[RetrievalScenarioScore, ...]:
@@ -146,3 +204,21 @@ def load_default_lexical_scores() -> tuple[RetrievalScenarioScore, ...]:
     benchmark = load_retrieval_benchmark()
     corpus = load_policy_corpus(REPOSITORY_ROOT / "evals" / "corpora" / benchmark.corpus_id)
     return evaluate_lexical_benchmark(benchmark, corpus)
+
+
+def load_default_benchmark_comparison() -> tuple[RetrievalBenchmarkRun, RetrievalBenchmarkRun]:
+    """Compare lexical and provider-free vector baselines on the tracked corpus."""
+
+    benchmark = load_retrieval_benchmark()
+    corpus = load_policy_corpus(REPOSITORY_ROOT / "evals" / "corpora" / benchmark.corpus_id)
+    lexical_scores = evaluate_lexical_benchmark(benchmark, corpus)
+    lexical = RetrievalBenchmarkRun(
+        retriever_name="lexical",
+        embedding_model_id=None,
+        index_build_ms=None,
+        estimated_embedding_cost=None,
+        estimated_query_cost=None,
+        scores=lexical_scores,
+    )
+    vector = evaluate_vector_benchmark(benchmark, corpus)
+    return lexical, vector

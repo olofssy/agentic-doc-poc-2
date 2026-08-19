@@ -73,6 +73,8 @@ class PolicyClause:
 
     @property
     def searchable_text(self) -> str:
+        """Backward-compatible searchable rendering for lexical retrieval."""
+
         return "\n".join(
             (self.document.title, self.document.document_type, self.heading, self.content)
         )

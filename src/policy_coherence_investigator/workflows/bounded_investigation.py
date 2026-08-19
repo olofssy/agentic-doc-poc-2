@@ -24,10 +24,11 @@ from policy_coherence_investigator.investigation.prompts import (
 )
 from policy_coherence_investigator.investigation.validation import validate_result_citations
 from policy_coherence_investigator.retrieval import (
+    ClauseRetriever,
+    LexicalClauseRetriever,
     PolicyClause,
     PolicyCorpus,
     filter_applicable_clauses,
-    rank_clauses,
 )
 
 from .investigation_policy import InvestigationRoute, route_next_evidence_need
@@ -53,8 +54,12 @@ class BoundedInvestigationState(TypedDict):
 def build_bounded_investigation_graph(
     model: BaseChatModel,
     corpus: PolicyCorpus,
+    *,
+    retriever: ClauseRetriever | None = None,
 ) -> CompiledStateGraph:
     """Build a variable-length investigation with deterministic safety and budget controls."""
+
+    selected_retriever = retriever or LexicalClauseRetriever()
 
     structured_model = cast(
         Runnable[list[BaseMessage], InvestigationResult],
@@ -79,6 +84,7 @@ def build_bounded_investigation_graph(
             rationale="Initial retrieval for the policy-coherence question.",
             retrieval_limit=state.get("retrieval_limit", 5),
             previously_retrieved=(),
+            retriever=selected_retriever,
         )
         if not retrieved_clauses:
             return {
@@ -122,6 +128,7 @@ def build_bounded_investigation_graph(
             rationale=evidence_need.rationale,
             retrieval_limit=state.get("retrieval_limit", 5),
             previously_retrieved=state.get("retrieved_clauses", ()),
+            retriever=selected_retriever,
         )
         requested_needs = [*state.get("requested_evidence_needs", []), evidence_need]
         if not new_clauses:
@@ -213,13 +220,18 @@ def _retrieve(
     rationale: str,
     retrieval_limit: int,
     previously_retrieved: tuple[PolicyClause, ...],
+    retriever: ClauseRetriever | None = None,
 ) -> tuple[InvestigationLedger, tuple[PolicyClause, ...]]:
     applicable_clauses = filter_applicable_clauses(
         corpus,
         as_of_date=ledger.working_scope.as_of_date,
         geography=ledger.working_scope.geography,
     )
-    ranked_results = rank_clauses(query, applicable_clauses, limit=len(applicable_clauses))
+    ranked_results = (retriever or LexicalClauseRetriever()).rank(
+        query,
+        applicable_clauses,
+        limit=len(applicable_clauses),
+    )
     known_references = {
         (clause.document.document_id, clause.clause_id) for clause in previously_retrieved
     }

@@ -1,7 +1,7 @@
 # Retrieval evolution plan
 
-**Status:** Proposed next implementation plan
-**Date:** 2026-08-17
+**Status:** Step 1 implemented; Steps 2–4 proposed
+**Date:** 2026-08-19
 
 ## Purpose
 
@@ -32,7 +32,9 @@ deterministic applicability filter
   - geography
         |
         v
-lexical clause ranking
+interchangeable clause ranking
+  - lexical baseline, or
+  - local vector baseline
         |
         v
 retrieved clause references and content
@@ -46,6 +48,8 @@ citation validation are deterministic controls. They must remain deterministic
 as vector and hybrid retrieval are introduced.
 
 ## Step 1 — vector retrieval baseline
+
+**Status: Implemented 2026-08-19.**
 
 ### Objective
 
@@ -103,6 +107,27 @@ pragmatic initial experiment, but the client protocol keeps a local model or a
 different provider possible later. Offline tests must not create embeddings over
 the network.
 
+### Delivered implementation
+
+- `ClauseRetriever` is the shared ranked-clause contract. The lexical retriever
+  remains the workflow default; both the fixed and bounded workflows accept an
+  injected retriever without changing applicability filtering, ledger
+  provenance, or citation validation.
+- `render_clause_for_retrieval` consistently renders document title, type,
+  clause heading, and clause body for vector indexing and diagnostics.
+- `LocalVectorIndex` is an in-memory exact cosine index whose records carry
+  stable document/clause IDs, rendered content, SHA-256 content hash, model ID,
+  and vector. Its optional JSON cache rebuilds when the model ID or indexed
+  content changes; `local/` is ignored for this generated state.
+- `EmbeddingClient` keeps generation provider-specific. The default benchmark
+  uses `DeterministicEmbeddingClient`, an offline hashed-token fake. The
+  `OpenAIEmbeddingClient` is available only through the benchmark command with
+  both `--embedding-provider openai` and `--allow-paid-embeddings`; no live
+  embedding calls occur in tests or the default command.
+- `VectorClauseRetriever` embeds the query only after deterministic filtering
+  and ranks only eligible clauses found in the validated index. It returns the
+  existing clause objects, preserving their source metadata and citation path.
+
 ### Required evaluation
 
 Run vector retrieval against the same scenarios in
@@ -117,6 +142,28 @@ Run vector retrieval against the same scenarios in
 The vector baseline succeeds as an implementation step when it is reproducible,
 preserves deterministic filtering and provenance, and produces a transparent
 comparison. It does not need to outperform lexical retrieval on every query.
+
+### Current provider-free comparison
+
+Run the comparison without a model or embedding-provider call:
+
+```bash
+uv run python -m evals.run_retrieval_benchmark
+```
+
+The report identifies the retriever and embedding model, then shows index-build
+time, per-scenario query latency, top-k decisive-clause recall, returned clause
+IDs, and decisive-clause ranks. The current clients expose cost as unavailable;
+the report retains explicit cost fields for a later provider client that can
+estimate it.
+
+On the controlled corpus as of implementation, the deterministic vector fake
+improved `agency-handover-conflict` from 2/4 to 3/4 decisive clauses at top 5.
+It matched the lexical baseline on the remaining scenarios (2/4 for the Sweden
+scenario and 1/1 for the superseded-policy scenario). This is an implementation
+sanity check, not a claim that a paid semantic embedding model will perform the
+same way. In both reports the superseded `enterprise_identity_policy_v6` clause
+is absent because status/date/geography filtering runs before either ranker.
 
 ### Relation to production RAG
 

@@ -13,10 +13,11 @@ from policy_coherence_investigator.investigation.models import InvestigationResu
 from policy_coherence_investigator.investigation.prompts import build_fixed_review_messages
 from policy_coherence_investigator.investigation.validation import validate_result_citations
 from policy_coherence_investigator.retrieval import (
+    ClauseRetriever,
+    LexicalClauseRetriever,
     PolicyClause,
     PolicyCorpus,
     filter_applicable_clauses,
-    rank_clauses,
 )
 
 
@@ -34,8 +35,12 @@ class FixedReviewState(TypedDict):
 def build_fixed_review_graph(
     model: BaseChatModel,
     corpus: PolicyCorpus,
+    *,
+    retriever: ClauseRetriever | None = None,
 ) -> CompiledStateGraph:
     """Build one fixed retrieval pass followed by one structured model comparison."""
+
+    selected_retriever = retriever or LexicalClauseRetriever()
 
     structured_model = cast(
         Runnable[list[BaseMessage], InvestigationResult],
@@ -48,7 +53,7 @@ def build_fixed_review_graph(
             as_of_date=state["as_of_date"],
             geography=state["geography"],
         )
-        ranked_clauses = rank_clauses(
+        ranked_clauses = selected_retriever.rank(
             state["question"],
             applicable_clauses,
             limit=state.get("retrieval_limit", 5),

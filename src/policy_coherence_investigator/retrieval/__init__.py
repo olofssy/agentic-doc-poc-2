@@ -1,5 +1,6 @@
-"""Deterministic corpus loading, applicability filtering, and lexical retrieval."""
+"""Controlled-corpus loading, filtering, and interchangeable clause retrieval."""
 
+from .contracts import ClauseRetriever, RetrievedClause
 from .corpus import (
     CorpusLoadError,
     PolicyClause,
@@ -9,10 +10,27 @@ from .corpus import (
     load_policy_corpus,
 )
 from .filters import filter_applicable_clauses
-from .lexical import RetrievedClause, rank_clauses, tokenize
+from .lexical import LexicalClauseRetriever, rank_clauses, tokenize
+from .rendering import render_clause_for_retrieval
+from .vector import (
+    DeterministicEmbeddingClient,
+    EmbeddingClient,
+    IndexedClauseVector,
+    LocalVectorIndex,
+    OpenAIEmbeddingClient,
+    VectorClauseRetriever,
+    build_vector_retriever,
+)
 
 __all__ = [
+    "ClauseRetriever",
     "CorpusLoadError",
+    "DeterministicEmbeddingClient",
+    "EmbeddingClient",
+    "IndexedClauseVector",
+    "LexicalClauseRetriever",
+    "LocalVectorIndex",
+    "OpenAIEmbeddingClient",
     "PolicyClause",
     "PolicyCorpus",
     "PolicyDocument",
@@ -21,5 +39,8 @@ __all__ = [
     "load_corpus_manifest",
     "load_policy_corpus",
     "rank_clauses",
+    "render_clause_for_retrieval",
     "tokenize",
+    "VectorClauseRetriever",
+    "build_vector_retriever",
 ]

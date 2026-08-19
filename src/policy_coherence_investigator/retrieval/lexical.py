@@ -4,19 +4,11 @@ import math
 import re
 from collections import Counter
 from collections.abc import Sequence
-from dataclasses import dataclass
 
+from .contracts import ClauseRetriever, RetrievedClause
 from .corpus import PolicyClause
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
-
-
-@dataclass(frozen=True)
-class RetrievedClause:
-    """One ranked clause with a reproducible lexical score."""
-
-    clause: PolicyClause
-    score: float
 
 
 def tokenize(text: str) -> tuple[str, ...]:
@@ -70,6 +62,19 @@ def rank_clauses(
         ),
     )
     return tuple(result for result in ranked if result.score > 0)[:limit]
+
+
+class LexicalClauseRetriever(ClauseRetriever):
+    """Adapter that exposes the existing lexical baseline through the shared contract."""
+
+    def rank(
+        self,
+        query: str,
+        clauses: Sequence[PolicyClause],
+        *,
+        limit: int,
+    ) -> tuple[RetrievedClause, ...]:
+        return rank_clauses(query, clauses, limit=limit)
 
 
 def _score(

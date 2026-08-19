@@ -21,6 +21,20 @@ Run every case sequentially:
 uv run python -m evals.run_all --provider openai
 ```
 
+Run the provider-free lexical versus vector retrieval benchmark:
+
+```bash
+uv run python -m evals.run_retrieval_benchmark
+```
+
+The default vector run uses a deterministic offline embedding fake. An OpenAI
+embedding run can consume tokens and therefore requires both explicit flags:
+
+```bash
+uv run python -m evals.run_retrieval_benchmark \
+  --embedding-provider openai --allow-paid-embeddings
+```
+
 The runner loads the hidden oracle only after workflow completion. Output is
 deliberately compact: case ID, pass/fail status, architecture, result category,
 retrieval count, termination reason, a shortened summary, and actionable issues.
