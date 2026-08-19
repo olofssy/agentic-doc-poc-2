@@ -7,17 +7,24 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from dotenv import load_dotenv
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from evals.evaluator import EvaluationReport, evaluate_result
 from policy_coherence_investigator.case_data import load_case, load_oracle
+from policy_coherence_investigator.case_data.loader import CaseInput
 from policy_coherence_investigator.infrastructure import build_chat_model
 from policy_coherence_investigator.investigation import (
+    Architecture,
     EvidenceNeed,
     InvestigationLedger,
     InvestigationResult,
     WorkingScope,
 )
-from policy_coherence_investigator.retrieval import PolicyClause, load_policy_corpus
+from policy_coherence_investigator.retrieval import (
+    PolicyClause,
+    PolicyCorpus,
+    load_policy_corpus,
+)
 from policy_coherence_investigator.workflows import (
     build_bounded_investigation_graph,
     build_fixed_review_graph,
@@ -31,7 +38,7 @@ class CaseRunReport:
     """One paid run and its deterministic post-run evaluation."""
 
     case_id: str
-    architecture: str
+    architecture: Architecture
     result: InvestigationResult | None
     retrieved_clauses: tuple[PolicyClause, ...]
     retrieval_count: int
@@ -45,61 +52,37 @@ class CaseRunReport:
         return self.result is not None and self.evaluation.passed
 
 
+@dataclass(frozen=True)
+class ArchitectureRun:
+    """One architecture's raw graph outcome, before oracle-based evaluation."""
+
+    result: InvestigationResult | None
+    retrieved_clauses: tuple[PolicyClause, ...]
+    ledger: InvestigationLedger | None
+    retrieval_count: int
+    termination_reason: str
+    requested_evidence_needs: tuple[EvidenceNeed, ...]
+
+
 def run_case(
     case_id: str,
     *,
-    architecture: str = "bounded",
+    architecture: Architecture = Architecture.BOUNDED,
     provider: str | None = None,
 ) -> CaseRunReport:
     """Invoke one architecture, then load the hidden oracle only for evaluation."""
 
-    if architecture not in {"baseline", "bounded"}:
+    if architecture not in Architecture:
         raise ValueError(f"unsupported architecture: {architecture!r}")
     case = load_case(case_id)
     corpus = load_policy_corpus(_corpus_directory(case.case.corpus_id))
     model = build_chat_model(provider)
 
-    if architecture == "baseline":
-        state = build_fixed_review_graph(model, corpus).invoke(
-            {
-                "question": case.case.question,
-                "as_of_date": case.case.review_context.as_of_date,
-                "geography": case.case.review_context.geography,
-            },
-            config=_run_config(case.case.case_id, architecture),
-        )
-        result = InvestigationResult.model_validate(state["result"])
-        retrieved_clauses = tuple(state["retrieved_clauses"])
-        ledger = None
-        retrieval_count = 1
-        termination_reason = "fixed_review_complete"
-        requested_evidence_needs = ()
-    else:
-        state = build_bounded_investigation_graph(model, corpus).invoke(
-            {
-                "question": case.case.question,
-                "working_scope": _initial_working_scope(
-                    case.case.question,
-                    case.case.review_context,
-                ),
-                "retrieval_budget": case.case.retrieval_budget,
-            },
-            config=_run_config(case.case.case_id, architecture),
-        )
-        result = (
-            InvestigationResult.model_validate(state["final_result"])
-            if "final_result" in state
-            else None
-        )
-        retrieved_clauses = tuple(state.get("retrieved_clauses", ()))
-        ledger = (
-            InvestigationLedger.model_validate(state["investigation_ledger"])
-            if "investigation_ledger" in state
-            else None
-        )
-        retrieval_count = len(ledger.retrieval_history) if ledger is not None else 0
-        termination_reason = state.get("termination_reason", "unknown")
-        requested_evidence_needs = tuple(state.get("requested_evidence_needs", ()))
+    run = (
+        _run_baseline_architecture(model, corpus, case)
+        if architecture == Architecture.BASELINE
+        else _run_bounded_architecture(model, corpus, case)
+    )
 
     # The graph has completed; only the evaluator may now inspect hidden expectations.
     oracle = load_oracle(case_id)
@@ -108,25 +91,88 @@ def run_case(
             case=case,
             oracle=oracle,
             corpus=corpus,
-            result=result,
-            retrieved_clauses=retrieved_clauses,
-            ledger=ledger,
+            result=run.result,
+            retrieved_clauses=run.retrieved_clauses,
+            ledger=run.ledger,
             architecture=architecture,
-            requested_evidence_needs=requested_evidence_needs,
+            requested_evidence_needs=run.requested_evidence_needs,
         )
-        if result is not None
+        if run.result is not None
         else EvaluationReport(("workflow completed without a structured final result",))
     )
     return CaseRunReport(
         case_id=case.case.case_id,
         architecture=architecture,
-        result=result,
-        retrieved_clauses=retrieved_clauses,
-        retrieval_count=retrieval_count,
+        result=run.result,
+        retrieved_clauses=run.retrieved_clauses,
+        retrieval_count=run.retrieval_count,
         retrieval_budget=case.case.retrieval_budget,
-        termination_reason=termination_reason,
-        requested_evidence_needs=requested_evidence_needs,
+        termination_reason=run.termination_reason,
+        requested_evidence_needs=run.requested_evidence_needs,
         evaluation=evaluation,
+    )
+
+
+def _run_baseline_architecture(
+    model: BaseChatModel,
+    corpus: PolicyCorpus,
+    case: CaseInput,
+) -> ArchitectureRun:
+    """Invoke the fixed retrieve-and-compare baseline for one case."""
+
+    state = build_fixed_review_graph(model, corpus).invoke(
+        {
+            "question": case.case.question,
+            "as_of_date": case.case.review_context.as_of_date,
+            "geography": case.case.review_context.geography,
+        },
+        config=_run_config(case.case.case_id, Architecture.BASELINE),
+    )
+    return ArchitectureRun(
+        result=InvestigationResult.model_validate(state["result"]),
+        retrieved_clauses=tuple(state["retrieved_clauses"]),
+        ledger=None,
+        retrieval_count=1,
+        termination_reason="fixed_review_complete",
+        requested_evidence_needs=(),
+    )
+
+
+def _run_bounded_architecture(
+    model: BaseChatModel,
+    corpus: PolicyCorpus,
+    case: CaseInput,
+) -> ArchitectureRun:
+    """Invoke the bounded, evidence-driven investigation for one case."""
+
+    state = build_bounded_investigation_graph(model, corpus).invoke(
+        {
+            "question": case.case.question,
+            "working_scope": _initial_working_scope(
+                case.case.question,
+                case.case.review_context,
+            ),
+            "retrieval_budget": case.case.retrieval_budget,
+        },
+        config=_run_config(case.case.case_id, Architecture.BOUNDED),
+    )
+    result = (
+        InvestigationResult.model_validate(state["final_result"])
+        if "final_result" in state
+        else None
+    )
+    ledger = (
+        InvestigationLedger.model_validate(state["investigation_ledger"])
+        if "investigation_ledger" in state
+        else None
+    )
+    return ArchitectureRun(
+        result=result,
+        retrieved_clauses=tuple(state.get("retrieved_clauses", ())),
+        ledger=ledger,
+        retrieval_count=len(ledger.retrieval_history) if ledger is not None else 0,
+        termination_reason=state.get("termination_reason", "unknown"),
+        requested_evidence_needs=tuple(state.get("requested_evidence_needs", ())),
     )
 
 
@@ -156,7 +202,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run one policy-coherence evaluation case.")
     parser.add_argument("case_id", help="Neutral directory ID under evals/cases.")
     parser.add_argument("--provider", choices=("openai", "anthropic"))
-    parser.add_argument("--architecture", choices=("baseline", "bounded"), default="bounded")
+    parser.add_argument(
+        "--architecture",
+        type=Architecture,
+        choices=tuple(Architecture),
+        default=Architecture.BOUNDED,
+    )
     args = parser.parse_args(argv)
 
     load_dotenv()
@@ -181,7 +232,7 @@ def _initial_working_scope(question: str, review_context) -> WorkingScope:
     )
 
 
-def _run_config(case_id: str, architecture: str) -> dict[str, object]:
+def _run_config(case_id: str, architecture: Architecture) -> dict[str, object]:
     return {
         "run_name": f"{architecture}_policy_coherence_review",
         "metadata": {"case_id": case_id, "architecture": architecture},

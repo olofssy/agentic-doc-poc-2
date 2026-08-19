@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 
 from policy_coherence_investigator.case_data import discover_case_ids
+from policy_coherence_investigator.investigation import Architecture
 
 from .run_case import CaseRunReport, print_case_report, run_case
 
@@ -35,7 +36,7 @@ class EvaluationSuiteReport:
 def run_all_cases(
     case_ids: Sequence[str],
     *,
-    architecture: str = "bounded",
+    architecture: Architecture = Architecture.BOUNDED,
     provider: str | None = None,
 ) -> EvaluationSuiteReport:
     """Run all requested cases without letting one provider failure stop the suite."""
@@ -61,7 +62,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description="Run every policy-coherence evaluation case.")
     parser.add_argument("--provider", choices=("openai", "anthropic"))
-    parser.add_argument("--architecture", choices=("baseline", "bounded"), default="bounded")
+    parser.add_argument(
+        "--architecture",
+        type=Architecture,
+        choices=tuple(Architecture),
+        default=Architecture.BOUNDED,
+    )
     args = parser.parse_args(argv)
 
     load_dotenv()

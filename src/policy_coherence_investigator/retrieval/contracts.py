@@ -12,6 +12,9 @@ from typing import Protocol
 
 from .corpus import PolicyClause
 
+DEFAULT_RETRIEVAL_LIMIT = 5
+"""Clauses requested per retrieval when a caller does not set its own limit."""
+
 
 @dataclass(frozen=True)
 class RetrievedClause:

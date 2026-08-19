@@ -17,6 +17,7 @@ from policy_coherence_investigator.investigation import (
     initialize_ledger,
 )
 from policy_coherence_investigator.retrieval import (
+    LexicalClauseRetriever,
     filter_applicable_clauses,
     load_policy_corpus,
     rank_clauses,
@@ -131,6 +132,7 @@ def test_follow_up_retrieval_selects_new_clauses_before_applying_its_limit() -> 
         rationale="Look beyond previously retrieved contractor policy clauses.",
         retrieval_limit=2,
         previously_retrieved=previously_retrieved,
+        retriever=LexicalClauseRetriever(),
     )
 
     assert new_clauses == expected_new_clauses

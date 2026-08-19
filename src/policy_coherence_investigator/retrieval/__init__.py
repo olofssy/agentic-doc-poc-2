@@ -1,6 +1,6 @@
 """Controlled-corpus loading, filtering, and interchangeable clause retrieval."""
 
-from .contracts import ClauseRetriever, RetrievedClause
+from .contracts import DEFAULT_RETRIEVAL_LIMIT, ClauseRetriever, RetrievedClause
 from .corpus import (
     CorpusLoadError,
     PolicyClause,
@@ -25,6 +25,7 @@ from .vector import (
 __all__ = [
     "ClauseRetriever",
     "CorpusLoadError",
+    "DEFAULT_RETRIEVAL_LIMIT",
     "DeterministicEmbeddingClient",
     "EmbeddingClient",
     "IndexedClauseVector",

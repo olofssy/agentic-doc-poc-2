@@ -9,6 +9,13 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from .scope import WorkingScope
 
 
+class Architecture(StrEnum):
+    """The competing policy-coherence investigation strategies under evaluation."""
+
+    BASELINE = "baseline"
+    BOUNDED = "bounded"
+
+
 class FindingCategory(StrEnum):
     """The mutually exclusive outcome categories for an investigation."""
 

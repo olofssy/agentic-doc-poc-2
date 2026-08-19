@@ -12,6 +12,7 @@ from .ledger import (
     revise_scope,
 )
 from .models import (
+    Architecture,
     CoherenceFinding,
     EvidenceNeed,
     EvidenceNeedKind,
@@ -24,6 +25,7 @@ from .scope import WorkingScope
 from .validation import CitationValidationError, validate_result_citations
 
 __all__ = [
+    "Architecture",
     "CoherenceFinding",
     "CandidateFinding",
     "CitationValidationError",

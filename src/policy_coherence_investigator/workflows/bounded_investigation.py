@@ -24,6 +24,7 @@ from policy_coherence_investigator.investigation.prompts import (
 )
 from policy_coherence_investigator.investigation.validation import validate_result_citations
 from policy_coherence_investigator.retrieval import (
+    DEFAULT_RETRIEVAL_LIMIT,
     ClauseRetriever,
     LexicalClauseRetriever,
     PolicyClause,
@@ -82,7 +83,7 @@ def build_bounded_investigation_graph(
             corpus=corpus,
             query=state["question"],
             rationale="Initial retrieval for the policy-coherence question.",
-            retrieval_limit=state.get("retrieval_limit", 5),
+            retrieval_limit=state.get("retrieval_limit", DEFAULT_RETRIEVAL_LIMIT),
             previously_retrieved=(),
             retriever=selected_retriever,
         )
@@ -97,24 +98,41 @@ def build_bounded_investigation_graph(
             "requested_evidence_needs": [],
         }
 
-    def initial_review(state: BoundedInvestigationState) -> dict[str, object]:
-        ledger = state["investigation_ledger"]
-        retrieved_clauses = state["retrieved_clauses"]
-        result = structured_model.invoke(
-            build_fixed_review_messages(
-                question=state["question"],
-                working_scope=ledger.working_scope,
-                retrieved_clauses=retrieved_clauses,
-            )
-        )
+    def _review(
+        messages: list[BaseMessage],
+        *,
+        ledger: InvestigationLedger,
+        retrieved_clauses: tuple[PolicyClause, ...],
+        result_history: list[InvestigationResult],
+        ledger_history: list[InvestigationLedger],
+    ) -> dict[str, object]:
+        """Invoke one structured review, validate its citations, and extend both histories."""
+
+        result = structured_model.invoke(messages)
         validate_result_citations(result, retrieved_clauses)
         updated_ledger = apply_review_result(ledger, result)
         return {
             "current_result": result,
-            "result_history": [result],
+            "result_history": [*result_history, result],
             "investigation_ledger": updated_ledger,
-            "ledger_history": [updated_ledger],
+            "ledger_history": [*ledger_history, updated_ledger],
         }
+
+    def initial_review(state: BoundedInvestigationState) -> dict[str, object]:
+        ledger = state["investigation_ledger"]
+        retrieved_clauses = state["retrieved_clauses"]
+        messages = build_fixed_review_messages(
+            question=state["question"],
+            working_scope=ledger.working_scope,
+            retrieved_clauses=retrieved_clauses,
+        )
+        return _review(
+            messages,
+            ledger=ledger,
+            retrieved_clauses=retrieved_clauses,
+            result_history=[],
+            ledger_history=[],
+        )
 
     def follow_up_retrieve(state: BoundedInvestigationState) -> dict[str, object]:
         ledger = state["investigation_ledger"]
@@ -126,7 +144,7 @@ def build_bounded_investigation_graph(
             corpus=corpus,
             query=evidence_need.query,
             rationale=evidence_need.rationale,
-            retrieval_limit=state.get("retrieval_limit", 5),
+            retrieval_limit=state.get("retrieval_limit", DEFAULT_RETRIEVAL_LIMIT),
             previously_retrieved=state.get("retrieved_clauses", ()),
             retriever=selected_retriever,
         )
@@ -146,22 +164,19 @@ def build_bounded_investigation_graph(
     def reassess_review(state: BoundedInvestigationState) -> dict[str, object]:
         ledger = state["investigation_ledger"]
         retrieved_clauses = state["retrieved_clauses"]
-        result = structured_model.invoke(
-            build_reassessment_messages(
-                question=state["question"],
-                working_scope=ledger.working_scope,
-                retrieved_clauses=retrieved_clauses,
-                prior_result=state["current_result"],
-            )
+        messages = build_reassessment_messages(
+            question=state["question"],
+            working_scope=ledger.working_scope,
+            retrieved_clauses=retrieved_clauses,
+            prior_result=state["current_result"],
         )
-        validate_result_citations(result, retrieved_clauses)
-        updated_ledger = apply_review_result(ledger, result)
-        return {
-            "current_result": result,
-            "result_history": [*state.get("result_history", []), result],
-            "investigation_ledger": updated_ledger,
-            "ledger_history": [*state.get("ledger_history", []), updated_ledger],
-        }
+        return _review(
+            messages,
+            ledger=ledger,
+            retrieved_clauses=retrieved_clauses,
+            result_history=state.get("result_history", []),
+            ledger_history=state.get("ledger_history", []),
+        )
 
     def finish(state: BoundedInvestigationState) -> dict[str, object]:
         current_result = state.get("current_result")
@@ -220,14 +235,14 @@ def _retrieve(
     rationale: str,
     retrieval_limit: int,
     previously_retrieved: tuple[PolicyClause, ...],
-    retriever: ClauseRetriever | None = None,
+    retriever: ClauseRetriever,
 ) -> tuple[InvestigationLedger, tuple[PolicyClause, ...]]:
     applicable_clauses = filter_applicable_clauses(
         corpus,
         as_of_date=ledger.working_scope.as_of_date,
         geography=ledger.working_scope.geography,
     )
-    ranked_results = (retriever or LexicalClauseRetriever()).rank(
+    ranked_results = retriever.rank(
         query,
         applicable_clauses,
         limit=len(applicable_clauses),

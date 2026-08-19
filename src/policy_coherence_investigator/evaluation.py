@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from policy_coherence_investigator.case_data.loader import CaseInput, CaseOracle
 from policy_coherence_investigator.investigation import (
+    Architecture,
     EvidenceNeed,
     InvestigationLedger,
     InvestigationResult,
@@ -35,7 +36,7 @@ def evaluate_result(
     result: InvestigationResult,
     retrieved_clauses: Iterable[PolicyClause],
     ledger: InvestigationLedger | None,
-    architecture: str,
+    architecture: Architecture,
     requested_evidence_needs: Iterable[EvidenceNeed] = (),
 ) -> EvaluationReport:
     """Check result category, findings, citations, scope, and bounded trajectory evidence."""
@@ -81,7 +82,7 @@ def evaluate_result(
         issues.append("result cites superseded, future, or geographically inapplicable clauses")
 
     _evaluate_scope_distinctions(issues, oracle, result, ledger)
-    if architecture == "bounded":
+    if architecture == Architecture.BOUNDED:
         _evaluate_bounded_trajectory(
             issues, case, oracle, ledger, requested_evidence_needs
         )

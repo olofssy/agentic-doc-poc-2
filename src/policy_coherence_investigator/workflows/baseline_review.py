@@ -13,6 +13,7 @@ from policy_coherence_investigator.investigation.models import InvestigationResu
 from policy_coherence_investigator.investigation.prompts import build_fixed_review_messages
 from policy_coherence_investigator.investigation.validation import validate_result_citations
 from policy_coherence_investigator.retrieval import (
+    DEFAULT_RETRIEVAL_LIMIT,
     ClauseRetriever,
     LexicalClauseRetriever,
     PolicyClause,
@@ -56,7 +57,7 @@ def build_fixed_review_graph(
         ranked_clauses = selected_retriever.rank(
             state["question"],
             applicable_clauses,
-            limit=state.get("retrieval_limit", 5),
+            limit=state.get("retrieval_limit", DEFAULT_RETRIEVAL_LIMIT),
         )
         retrieved_clauses = tuple(result.clause for result in ranked_clauses)
         messages = build_fixed_review_messages(
