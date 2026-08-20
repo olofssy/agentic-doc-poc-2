@@ -1,6 +1,6 @@
-# Definitioner för identitet och åtkomst, version 2
+# Identity and Access Definitions, version 2
 
-## IDD-2.1 — Personalidentitet
+## IDD-2.1 — Workforce identity
 
-En personalidentitet är en identitet som tilldelats en medarbetare eller
-konsult som är behörig att använda ett företagssystem.
+A workforce identity is an identity assigned to an employee or contractor who is
+authorised to use a corporate system.

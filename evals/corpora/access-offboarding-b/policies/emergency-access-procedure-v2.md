@@ -1,6 +1,6 @@
-# Rutin för nödåtkomst, version 2
+# Emergency Access Procedure, version 2
 
-## EAP-4.2 — Nödkonton
+## EAP-4.2 — Emergency accounts
 
-Nödkonton ska granskas efter ett avslut men får förbli tillgängliga för en
-incidentledare under en pågående säkerhetsincident.
+Emergency accounts must be reviewed after a termination but may remain available
+to an incident commander during an active security incident.

@@ -43,74 +43,73 @@ cases:
         explanation: Fastställer att konsulter är personalidentiteter.
 
   - case_id: access-offboarding-b
-    display_name: Skenbar tidsgränskonflikt löses upp genom åtkomsttyp
+    display_name: Apparent deadline conflict resolves by access type
     summary: >
-      Detta fall testar om olika inaktiveringsfrister jämförs inom rätt kontotypsomfång
-      istället för att rapporteras som en konflikt mellan personalpolicyer.
+      This case tests whether different revocation deadlines are compared in their
+      proper account-type scope rather than reported as an employee-policy conflict.
     capability_tags:
-      - kontrollerad policyhämtning
-      - omfångsdistinktion för kontotyp
-      - upplösning av skenbar konflikt
-      - riktad definitionshämtning
+      - controlled policy retrieval
+      - account-type scope distinction
+      - apparent-conflict resolution
+      - targeted definition retrieval
     resolution_guide: >
-      Jämför regeln om privilegierad åtkomst med rutinen för ordinära medarbetarkonton,
-      hämta sedan definitionen av privilegierad åtkomst. Reglerna styr olika åtkomsttyper
-      och kan därför gälla samtidigt istället för att stå i konflikt.
+      Compare the privileged-access rule with the ordinary employee-account procedure,
+      then retrieve the privileged-access definition. The rules govern distinct access
+      types and therefore coexist rather than conflict.
     document_roles:
       - document_id: access_control_policy_v4
         kind: policy_rule
-        explanation: Identifiera kravet på inaktivering av privilegierad åtkomst.
+        explanation: Identify the privileged-access revocation requirement.
       - document_id: hr_offboarding_procedure_v3
         kind: policy_rule
-        explanation: Identifiera kravet för ordinära medarbetarkonton.
+        explanation: Identify the ordinary employee-account requirement.
       - document_id: identity_definitions_v2
         kind: term_definition
-        explanation: Avgör gränsen mellan privilegierad och ordinär åtkomst.
+        explanation: Resolve the boundary between privileged and ordinary access.
     clause_roles:
       - reference:
           document_id: access_control_policy_v4
           clause_id: ACP-4.2.1
-        label: Regel om privilegierad åtkomst
-        explanation: Kräver omedelbar inaktivering av privilegierad åtkomst.
+        label: Privileged-access rule
+        explanation: Requires immediate revocation for privileged access.
       - reference:
           document_id: hr_offboarding_procedure_v3
           clause_id: HOP-7.3
-        label: Regel om ordinära konton
-        explanation: Anger en separat tidsgräns för ordinära medarbetarkonton.
+        label: Ordinary-account rule
+        explanation: Sets a separate ordinary employee-account deadline.
       - reference:
           document_id: identity_definitions_v2
           clause_id: IDD-2.5
-        label: Omfångslösare
-        explanation: Skiljer privilegierad åtkomst från ordinär medarbetaråtkomst.
+        label: Scope resolver
+        explanation: Distinguishes privileged from ordinary employee access.
 
   - case_id: access-offboarding-c
-    display_name: Tidsgränsen för konsultavslut förblir otillräckligt reglerad
+    display_name: Contractor offboarding deadline remains insufficiently governed
     summary: >
-      Detta fall testar om utredaren söker igenom konsultunderlaget, identifierar den
-      saknade tidsgränsen och rapporterar en kvalificerad otillräcklighet istället för
-      ett påstående om total avsaknad.
+      This case tests whether the investigator searches contractor material, identifies
+      the missing deadline, and reports qualified insufficiency rather than an absence claim.
     capability_tags:
-      - kontrollerad policyhämtning
-      - populationsspecifik täckningskontroll
-      - rapportering av kvalificerad täckningslucka
-      - förhindrande av obelagt avsaknadspåstående
+      - controlled policy retrieval
+      - population-specific coverage check
+      - qualified coverage-gap reporting
+      - unsupported-absence prevention
     resolution_guide: >
-      Hämta det konsultspecifika policyunderlaget. Det fastställer en granskningsskyldighet
-      men ingen inaktiveringsfrist, så den lämpliga slutsatsen är otillräcklig reglering av
-      tidpunkten för konsulter — inte att ingen konsultpolicy finns.
+      Retrieve contractor-specific policy material. It establishes a review obligation but
+      no revocation deadline, so the appropriate conclusion is insufficient governance of
+      contractor timing—not that no contractor policy exists.
     document_roles:
       - document_id: access_control_policy_v4
         kind: policy_rule
-        explanation: Fastställ referensvärdet för medarbetare inför täckningsjämförelsen.
+        explanation: Establish the employee baseline for the coverage comparison.
       - document_id: contractor_management_policy_v2
         kind: policy_rule
-        explanation: Undersök om konsultåtkomst får en faktisk tidsgräns.
+        explanation: Test whether contractor access receives an actual deadline.
       - document_id: identity_definitions_v2
         kind: term_definition
-        explanation: Avgör distinktionen mellan populationerna medarbetare och konsulter.
+        explanation: Resolve the employee and contractor population distinction.
     clause_roles:
       - reference:
           document_id: contractor_management_policy_v2
           clause_id: CMP-6.4
-        label: Täckningskontroll
-        explanation: Reglerar granskning av konsulter men anger ingen inaktiveringsfrist.
+        label: Coverage probe
+        explanation: Governs contractor review but supplies no revocation deadline.

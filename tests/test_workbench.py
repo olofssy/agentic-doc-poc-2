@@ -47,7 +47,7 @@ def test_request_accepts_editable_scope_but_rejects_unknown_scope_values() -> No
     assert request.populations == ("contractor",)
     assert request.access_types == ("ordinary",)
 
-    with pytest.raises(ValueError, match="Ogiltigt val av population"):
+    with pytest.raises(ValueError, match="Invalid population"):
         parse_workbench_request(
             {
                 "case": ["access-offboarding-c"],
@@ -106,16 +106,16 @@ def test_workbench_renders_case_explorer_and_single_submission_panel() -> None:
     page = render_workbench_page(load_explorer_cases(), "access-offboarding-a")
 
     assert "Demoanteckningar för utvärdering" in page
-    assert "Utred en policyfråga" in page
+    assert "Investigate a policy question" in page
     assert 'method="post" action="/investigate"' in page
     assert "Mänsklig lösningsguide" in page
     assert "medarbetare" in page
     assert "contractor" in page
-    assert "Fallutforskare" in page
-    assert "Ställ en policykoherensfråga" in page
-    assert "Utreder policyunderlag…" in page
+    assert "Case explorer" in page
+    assert "Ask a policy-coherence question" in page
+    assert "Investigating policy evidence…" in page
     assert 'button:disabled' in page
-    assert "dolda förväntade utfallet efter körningen" in page
+    assert "hidden expected outcome after the run" in page
     assert 'id="comparison-status"' in page
     assert "updateComparisonStatus" in page
 
@@ -199,4 +199,4 @@ def test_completed_canonical_run_renders_its_evaluation_status() -> None:
         evaluation=EvaluationReport(()),
     )
 
-    assert "Fallutvärdering godkänd" in page
+    assert "Case evaluation passed" in page

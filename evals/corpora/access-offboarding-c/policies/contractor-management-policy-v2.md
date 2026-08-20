@@ -1,7 +1,7 @@
-# Policy för hantering av konsulter, version 2
+# Contractor Management Policy, version 2
 
-## CMP-6.4 — Avisering vid avslutat uppdrag
+## CMP-6.4 — Contract completion notification
 
-När ett konsultuppdrag avslutas ska den ansvariga chefen meddela servicedesk
-att åtkomsten till företagets system bör granskas. Denna policy anger ingen
-tidsgräns för att inaktivera den åtkomsten.
+When a contractor engagement ends, the sponsoring manager must notify the service
+desk that corporate-system access should be reviewed. This policy specifies no
+deadline for disabling that access.

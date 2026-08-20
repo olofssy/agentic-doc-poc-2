@@ -1,8 +1,8 @@
 case_id: access-offboarding-c
 corpus_id: access-offboarding-c
 question: >
-  Reglerar gällande policyer samstämmigt tidpunkten för att inaktivera
-  ordinär åtkomst för medarbetare och konsulter efter avslut?
+  Do current policies coherently govern ordinary employee and contractor
+  access-revocation timing after offboarding?
 review_context:
   as_of_date: 2026-08-16
   geography: global

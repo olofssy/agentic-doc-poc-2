@@ -25,7 +25,6 @@ from policy_coherence_investigator.interfaces.investigate import (
     InvestigationRunReport,
     run_investigation,
 )
-from policy_coherence_investigator.interfaces.sv_labels import humanize_sv
 from policy_coherence_investigator.investigation import CoherenceFinding
 
 MAX_REQUEST_BYTES = 16 * 1024
@@ -68,19 +67,19 @@ def parse_workbench_request(
     default = default_workbench_request(selected_case)
     question = _one_value(form, "question").strip()
     if not question:
-        raise ValueError("Frågan får inte vara tom.")
+        raise ValueError("Question cannot be blank.")
     try:
         as_of_date = date.fromisoformat(_one_value(form, "as_of"))
     except ValueError as error:
-        raise ValueError("Datumet måste anges som ÅÅÅÅ-MM-DD.") from error
+        raise ValueError("As-of date must use YYYY-MM-DD.") from error
     geography = _one_value(form, "geography").strip()
     if not geography:
-        raise ValueError("Geografin får inte vara tom.")
+        raise ValueError("Geography cannot be blank.")
     populations = _scope_values(
         form.get("population", ()), frozenset(default.populations), "population"
     )
     access_types = _scope_values(
-        form.get("access_type", ()), frozenset(default.access_types), "åtkomsttyp"
+        form.get("access_type", ()), frozenset(default.access_types), "access type"
     )
     return WorkbenchRequest(
         case_id=default.case_id,
@@ -160,12 +159,12 @@ def render_workbench_page(
     canonical_request = is_canonical_request(request, selected_case)
     case_navigation = "".join(render_case_link(case, case is selected_case) for case in cases)
     return f"""<!doctype html>
-<html lang="sv">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Arbetsyta för policykoherensutredning</title>
+  <title>Policy coherence investigation workbench</title>
   <style>
     :root {{ color: #17202a; background: #eef2f3; font-family: ui-sans-serif, system-ui, sans-serif; }}
     * {{ box-sizing: border-box; }}
@@ -232,16 +231,15 @@ def render_workbench_page(
 </head>
 <body>
   <main>
-    <section class="explorer" aria-label="Fallutforskare för utvärdering">
-      <nav class="explorer-nav"><h1>Fallutforskare</h1><p>Att välja ett fall anger den kontrollerade korpusen och granskningens standardvärden för utredningen.</p>{case_navigation}</nav>
+    <section class="explorer" aria-label="Evaluation case explorer">
+      <nav class="explorer-nav"><h1>Case explorer</h1><p>Selecting a case sets the controlled corpus and review defaults for the investigation.</p>{case_navigation}</nav>
       <article class="case-details">{render_case_details(selected_case)}</article>
     </section>
-    <section class="investigator" aria-label="Policykoherensutredare">
+    <section class="investigator" aria-label="Policy coherence investigator">
       <div class="investigator-inner">
-        <p class="eyebrow">Valt fall: {html.escape(selected_case.case_input.case.case_id)}</p>
-        <h2>Utred en policyfråga</h2>
-        <p class="lede">Redigera frågan eller omfånget och kör sedan en avgränsad, evidensbaserad
-        granskning mot detta falls kontrollerade korpus.</p>
+        <p class="eyebrow">Selected case: {html.escape(selected_case.case_input.case.case_id)}</p>
+        <h2>Investigate a policy question</h2>
+        <p class="lede">Edit the question or scope, then run one bounded, evidence-cited review against this case's controlled corpus.</p>
         {_render_form(request, default_request)}
         {_render_comparison_status(canonical_request, report is not None)}
         {_render_error(error)}
@@ -269,7 +267,7 @@ def make_request_handler(
             try:
                 page = render_workbench_page(cases, selected_case_id)
             except ValueError:
-                self.send_error(HTTPStatus.NOT_FOUND, "Okänt fall")
+                self.send_error(HTTPStatus.NOT_FOUND, "Unknown case")
                 return
             self._send_html(page)
 
@@ -297,18 +295,17 @@ def make_request_handler(
             except Exception:
                 page = self._render_failure_page(
                     self._selected_case_id_from_body(),
-                    "Utredningen kunde inte slutföras. Kontrollera den konfigurerade "
-                    "leverantören och försök igen.",
+                    "The investigation could not be completed. Check the configured provider and try again.",
                 )
                 self._send_html(page, status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
         def _read_form(self) -> dict[str, list[str]]:
             content_length = int(self.headers.get("Content-Length", "0"))
             if content_length < 1 or content_length > MAX_REQUEST_BYTES:
-                raise ValueError("Det inskickade formuläret saknas eller är för stort.")
+                raise ValueError("The submitted form is missing or too large.")
             content_type = self.headers.get("Content-Type", "")
             if content_type.split(";", 1)[0].strip().lower() != "application/x-www-form-urlencoded":
-                raise ValueError("Förväntade en vanlig formulärinlämning.")
+                raise ValueError("Expected a standard form submission.")
             body = self.rfile.read(content_length).decode("utf-8")
             self._last_form = parse_qs(body, keep_blank_values=True)
             return self._last_form
@@ -340,11 +337,9 @@ def make_request_handler(
 def main(argv: Sequence[str] | None = None) -> int:
     """Serve the combined local case explorer and one-shot investigator workbench."""
 
-    parser = argparse.ArgumentParser(
-        description="Kör den lokala arbetsytan för policykoherens."
-    )
-    parser.add_argument("--host", default="127.0.0.1", help="Värdgränssnitt att lyssna på.")
-    parser.add_argument("--port", type=int, default=8767, help="TCP-port att lyssna på.")
+    parser = argparse.ArgumentParser(description="Run the local policy-coherence workbench.")
+    parser.add_argument("--host", default="127.0.0.1", help="Host interface to listen on.")
+    parser.add_argument("--port", type=int, default=8767, help="TCP port to listen on.")
     parser.add_argument("--provider", choices=("openai", "anthropic"))
     args = parser.parse_args(argv)
     load_dotenv()
@@ -352,12 +347,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     server = ThreadingHTTPServer(
         (args.host, args.port), make_request_handler(cases, provider=args.provider)
     )
-    print(f"Arbetsytan för policykoherens körs på http://{args.host}:{args.port}")
-    print("Tryck Ctrl+C för att stoppa.")
+    print(f"Policy coherence workbench running at http://{args.host}:{args.port}")
+    print("Press Ctrl+C to stop.")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nArbetsytan för policykoherens stoppad.")
+        print("\nPolicy coherence workbench stopped.")
     finally:
         server.server_close()
     return 0
@@ -367,15 +362,15 @@ def _render_form(request: WorkbenchRequest, default_request: WorkbenchRequest) -
     return f"""
 <form id="investigation-form" method="post" action="/investigate">
   <input type="hidden" name="case" value="{html.escape(request.case_id, quote=True)}">
-  <label for="question">Fråga<textarea id="question" name="question" required placeholder="Ställ en policykoherensfråga" data-canonical-value="{html.escape(default_request.question, quote=True)}">{html.escape(request.question)}</textarea></label>
+  <label for="question">Question<textarea id="question" name="question" required placeholder="Ask a policy-coherence question" data-canonical-value="{html.escape(default_request.question, quote=True)}">{html.escape(request.question)}</textarea></label>
   <div class="fields">
-    <label for="as_of">Per<input id="as_of" name="as_of" type="date" value="{request.as_of_date.isoformat()}" data-canonical-value="{default_request.as_of_date.isoformat()}" required></label>
-    <label for="geography">Geografi<input id="geography" name="geography" value="{html.escape(request.geography, quote=True)}" data-canonical-value="{html.escape(default_request.geography, quote=True)}" required></label>
+    <label for="as_of">As of<input id="as_of" name="as_of" type="date" value="{request.as_of_date.isoformat()}" data-canonical-value="{default_request.as_of_date.isoformat()}" required></label>
+    <label for="geography">Geography<input id="geography" name="geography" value="{html.escape(request.geography, quote=True)}" data-canonical-value="{html.escape(default_request.geography, quote=True)}" required></label>
   </div>
-  <fieldset><legend>Populationer i omfånget</legend><div class="choices">{_render_choices('population', default_request.populations, request.populations, default_request.populations)}</div></fieldset>
-  <fieldset><legend>Åtkomsttyper i omfånget</legend><div class="choices">{_render_choices('access_type', default_request.access_types, request.access_types, default_request.access_types)}</div></fieldset>
-  <button id="investigate-button" type="submit">Utred</button>
-  <p id="investigation-status" role="status" aria-live="polite" hidden>Utreder policyunderlag…</p>
+  <fieldset><legend>Populations in scope</legend><div class="choices">{_render_choices('population', default_request.populations, request.populations, default_request.populations)}</div></fieldset>
+  <fieldset><legend>Access types in scope</legend><div class="choices">{_render_choices('access_type', default_request.access_types, request.access_types, default_request.access_types)}</div></fieldset>
+  <button id="investigate-button" type="submit">Investigate</button>
+  <p id="investigation-status" role="status" aria-live="polite" hidden>Investigating policy evidence…</p>
 </form>"""
 
 
@@ -391,7 +386,7 @@ def _render_choices(
         f'<label class="choice"><input type="checkbox" name="{name}" value="{value}"'
         f"{' checked' if value in selected else ''} "
         f'data-canonical-checked="{str(value in canonical).lower()}"> '
-        f"{html.escape(humanize_sv(value))}</label>"
+        f"{html.escape(value.capitalize())}</label>"
         for value in values
     )
 
@@ -399,15 +394,15 @@ def _render_choices(
 def _render_comparison_status(canonical_request: bool, completed: bool) -> str:
     if canonical_request:
         message = (
-            "Detta falls kanoniska fråga och omfång är valda. "
-            "Resultatet kommer att jämföras med det dolda förväntade utfallet efter körningen."
+            "This case's canonical question and scope are selected. "
+            "Its result will be compared with the hidden expected outcome after the run."
             if not completed
-            else "Detta resultat jämfördes med det valda fallets dolda förväntade utfall."
+            else "This result was compared with the selected case's hidden expected outcome."
         )
         return f'<p class="comparison active" id="comparison-status">✓ {message}</p>'
     return (
-        '<p class="comparison inactive" id="comparison-status">Anpassad indata vald. '
-        "Utredaren körs, men resultatet jämförs inte med fallets förväntade utfall.</p>"
+        '<p class="comparison inactive" id="comparison-status">Custom inputs selected. The investigator will run, '
+        "but this result will not be compared with the case's expected outcome.</p>"
     )
 
 
@@ -417,8 +412,8 @@ def _render_submission_script() -> str:
     return """<script>
 const investigationForm = document.getElementById("investigation-form");
 const comparisonStatus = document.getElementById("comparison-status");
-const comparisonText = "Detta falls kanoniska fråga och omfång är valda. Resultatet kommer att jämföras med det dolda förväntade utfallet efter körningen.";
-const customText = "Anpassad indata vald. Utredaren körs, men resultatet jämförs inte med fallets förväntade utfall.";
+const comparisonText = "This case's canonical question and scope are selected. Its result will be compared with the hidden expected outcome after the run.";
+const customText = "Custom inputs selected. The investigator will run, but this result will not be compared with the case's expected outcome.";
 
 function updateComparisonStatus() {
   const textMatches = ["question", "as_of", "geography"].every((name) => {
@@ -438,7 +433,7 @@ investigationForm.addEventListener("change", updateComparisonStatus);
 investigationForm.addEventListener("submit", () => {
   const button = document.getElementById("investigate-button");
   button.disabled = true;
-  button.textContent = "Utreder…";
+  button.textContent = "Investigating…";
   document.getElementById("investigation-status").hidden = false;
 });
 </script>"""
@@ -458,8 +453,8 @@ def _render_report(
     if report is None:
         return ""
     if report.result is None:
-        return """<section class="result"><h3>Utredningen avslutades utan en strukturerad granskning</h3>
-<p class="metadata">Ingen underbyggd granskning producerades. Se utredningens metadata nedan.</p>""" + _render_evaluation(evaluation) + _render_metadata(report) + "</section>"
+        return """<section class="result"><h3>Investigation finished without a structured review</h3>
+<p class="metadata">No supported review was produced. See the investigation metadata below.</p>""" + _render_evaluation(evaluation) + _render_metadata(report) + "</section>"
     result = report.result
     show_evaluation = evaluation is not None
     cited_references = {
@@ -485,14 +480,14 @@ def _render_report(
     questions = "".join(f"<li>{html.escape(question)}</li>" for question in result.unresolved_questions)
     evidence_need = result.next_evidence_need
     next_step = "" if evidence_need is None else (
-        f"<section class=\"callout\"><strong>Ytterligare underlag begärt:</strong> "
+        f"<section class=\"callout\"><strong>Further evidence requested:</strong> "
         f"{html.escape(evidence_need.rationale)}</section>"
     )
     category_mark = _category_mark(result.category.value, explorer_case) if show_evaluation else ""
-    return f"""<section class="result"><p class="category">{html.escape(humanize_sv(result.category.value))}</p>{category_mark}
-<h3>Granskning</h3><p class="summary">{html.escape(result.summary)}</p>{_render_evaluation(evaluation)}{findings}
-{_render_list_section('Omfångsantaganden', assumptions)}
-{_render_list_section('Olösta frågor', questions)}
+    return f"""<section class="result"><p class="category">{html.escape(result.category.value.replace('_', ' '))}</p>{category_mark}
+<h3>Review</h3><p class="summary">{html.escape(result.summary)}</p>{_render_evaluation(evaluation)}{findings}
+{_render_list_section('Scope assumptions', assumptions)}
+{_render_list_section('Unresolved questions', questions)}
 {next_step}{_render_metadata(report)}</section>"""
 
 
@@ -500,10 +495,10 @@ def _render_evaluation(evaluation: EvaluationReport | None) -> str:
     if evaluation is None:
         return ""
     if evaluation.passed:
-        return '<section class="verification pass"><strong>✓ Fallutvärdering godkänd</strong></section>'
+        return '<section class="verification pass"><strong>✓ Case evaluation passed</strong></section>'
     issues = "".join(f"<li>{html.escape(issue)}</li>" for issue in evaluation.issues)
     return (
-        '<section class="verification fail"><strong>✕ Fallutvärdering behöver granskas</strong>'
+        '<section class="verification fail"><strong>✕ Case evaluation needs review</strong>'
         f"<ul>{issues}</ul></section>"
     )
 
@@ -511,8 +506,8 @@ def _render_evaluation(evaluation: EvaluationReport | None) -> str:
 def _category_mark(category: str, explorer_case: ExplorerCase) -> str:
     accepted = {value.value for value in explorer_case.oracle.acceptable_result_categories}
     if category in accepted:
-        return '<span class="verification-mark pass">✓ Förväntad kategori</span>'
-    return '<span class="verification-mark fail">✕ Oväntad kategori</span>'
+        return '<span class="verification-mark pass">✓ Expected category</span>'
+    return '<span class="verification-mark fail">✕ Unexpected category</span>'
 
 
 def _render_finding(
@@ -525,16 +520,16 @@ def _render_finding(
     if not show_evaluation:
         mark = ""
     elif finding_id in explorer_case.oracle.required_findings:
-        mark = '<span class="verification-mark pass">✓ Förväntat fynd</span>'
+        mark = '<span class="verification-mark pass">✓ Expected finding</span>'
     elif finding_id in explorer_case.oracle.forbidden_findings:
-        mark = '<span class="verification-mark fail">✕ Förbjudet fynd</span>'
+        mark = '<span class="verification-mark fail">✕ Forbidden finding</span>'
     else:
         mark = ""
     citations = "".join(
         _render_citation(citation.document_id, citation.clause_id, expected_citations)
         for citation in finding.citations
     )
-    return f"""<section class="finding"><h4>{html.escape(humanize_sv(finding_id))}{mark}</h4>
+    return f"""<section class="finding"><h4>{html.escape(finding_id.replace('_', ' '))}{mark}</h4>
 <p>{html.escape(finding.conclusion)}</p><div>{citations}</div></section>"""
 
 
@@ -545,7 +540,7 @@ def _render_assumption(
     show_evaluation: bool,
 ) -> str:
     mark = (
-        '<span class="verification-mark pass">✓ Förväntad omfångsdistinktion</span>'
+        '<span class="verification-mark pass">✓ Expected scope distinction</span>'
         if show_evaluation and assumption_id in explorer_case.oracle.required_scope_distinctions
         else ""
     )
@@ -569,7 +564,7 @@ def _render_citation(
 ) -> str:
     target = f"{document_id}--{clause_id}"
     expected = (
-        '<span class="verification-mark pass">✓ Förväntat underlag</span>'
+        '<span class="verification-mark pass">✓ Expected evidence</span>'
         if (document_id, clause_id) in expected_citations
         else ""
     )
@@ -584,9 +579,9 @@ def _render_list_section(title: str, values: str) -> str:
 
 def _render_metadata(report: InvestigationRunReport) -> str:
     follow_ups = ", ".join(
-        f"{humanize_sv(need.kind.value)} ({need.target})" for need in report.requested_evidence_needs
-    ) or "inget"
-    return f"""<p class="metadata">Korpus: {html.escape(report.corpus_id)} · Hämtningar: {report.retrieval_count}/{report.retrieval_budget} · Avslutsorsak: {html.escape(humanize_sv(report.termination_reason))}<br>Uppföljande underlag: {html.escape(follow_ups)}</p>"""
+        f"{need.kind.value} ({need.target})" for need in report.requested_evidence_needs
+    ) or "none"
+    return f"""<p class="metadata">Corpus: {html.escape(report.corpus_id)} · Retrievals: {report.retrieval_count}/{report.retrieval_budget} · Termination: {html.escape(report.termination_reason)}<br>Follow-up evidence: {html.escape(follow_ups)}</p>"""
 
 
 def _selected_case(cases: tuple[ExplorerCase, ...], case_id: str | None) -> ExplorerCase:
@@ -595,13 +590,13 @@ def _selected_case(cases: tuple[ExplorerCase, ...], case_id: str | None) -> Expl
     for explorer_case in cases:
         if explorer_case.case_input.case.case_id == case_id:
             return explorer_case
-    raise ValueError("Okänt fall.")
+    raise ValueError("Unknown case.")
 
 
 def _one_value(form: Mapping[str, Sequence[str]], name: str) -> str:
     values = form.get(name, ())
     if len(values) != 1:
-        raise ValueError(f"Förväntade exakt ett värde för {name.replace('_', ' ')}.")
+        raise ValueError(f"Expected exactly one {name.replace('_', ' ')} value.")
     return values[0]
 
 
@@ -610,9 +605,9 @@ def _scope_values(
 ) -> tuple[str, ...]:
     normalized = tuple(value.strip().lower() for value in values if value.strip())
     if not normalized:
-        raise ValueError(f"Välj minst en {label}.")
+        raise ValueError(f"Choose at least one {label}.")
     if len(set(normalized)) != len(normalized) or not set(normalized) <= allowed_values:
-        raise ValueError(f"Ogiltigt val av {label}.")
+        raise ValueError(f"Invalid {label} selection.")
     return normalized
 
 

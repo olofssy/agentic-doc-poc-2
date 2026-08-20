@@ -24,15 +24,6 @@ stable, independent of corpus language:
   and its decision rules. These are instructions to the model, not content a
   Swedish reader needs to parse, and translating them risks subtly shifting
   carefully tuned wording for no reader benefit.
-- `document_type` and `authority_level` values in each corpus's
-  `corpus.yaml` (`policy`, `procedure`, `corporate_policy`, `governance`,
-  and so on), and `WorkingScope.populations`/`access_types` values
-  (`employee`, `contractor`, `ordinary`, `privileged`). Both flow directly
-  into the model prompt — `authority_level` is rendered into every
-  `<clause ...>` tag in `prompts.py`, and scope values are serialized into
-  the `<working_scope>` JSON block — so they are model-facing contract
-  values, not pure UI text, even though they also happen to render as UI
-  badges and form labels.
 
 These IDs are matched literally by `evaluation.py` against model output and
 by oracle fixtures, so translating them would break scoring without
@@ -48,17 +39,14 @@ improving anything for a human reader.
 - Interface chrome: hardcoded strings in `interfaces/*.py` (headings, badge
   labels, notices, CLI help text).
 
-Human-readable labels for every English identifier listed above (finding
-categories, evidence-need kinds, finding/scope-distinction IDs, oracle-specific
-one-off IDs, `document_type`/`authority_level` values, scope values, and
-bounded-investigation termination reasons) are translated separately in
-[`interfaces/sv_labels.py`](../../src/policy_coherence_investigator/interfaces/sv_labels.py)
-via `humanize_sv()`, which maps each stable ID to a Swedish label for display
-only. The ID itself is never changed — e.g. a population checkbox keeps
-`value="contractor"` for form submission while showing the label "Konsult".
-Unmapped IDs fall back to naive underscore-to-space humanization rather than
-raising, so a newly added ID (for example a novel finding ID the model
-invents) degrades to readable English until its label is added.
+Human-readable labels for the English structured-output IDs (finding
+categories, evidence-need kinds, finding IDs, scope-distinction IDs, and any
+oracle-specific one-off ID) are translated separately in
+[`interfaces/sv_labels.py`](../../src/policy_coherence_investigator/interfaces/sv_labels.py),
+which maps each stable ID to a Swedish label for display only. The ID itself
+is never changed. Unmapped IDs fall back to naive underscore-to-space
+humanization rather than raising, so a newly added ID degrades to readable
+English until its label is added.
 
 ## Terminology
 
@@ -80,10 +68,6 @@ Consistent word choices across corpora, case fixtures, and interfaces:
 | granskning(sfråga/skontext) | review (question/context) | |
 | hämta / hämtningsmål | retrieve / retrieval target | |
 | omfång | scope | |
-| rutin | procedure | |
-| styrning | governance | |
-| täckning(skontroll/slucka) | coverage (check/gap) | |
-| avslutsorsak | termination reason | |
 
 ## Status
 
@@ -93,15 +77,14 @@ phases land.
 | Area | Status |
 | --- | --- |
 | Lexical/embedding tokenizer (å/ä/ö) | Done |
-| Corpus `access-offboarding-a`, `-b`, `-c` | Done |
-| Case questions `access-offboarding-a`, `-b`, `-c` | Done |
-| Presentation entries `access-offboarding-a`, `-b`, `-c` | Done |
+| Corpus `access-offboarding-a` | Done |
+| Case question `access-offboarding-a` | Done |
+| Presentation entry `access-offboarding-a` | Done |
 | `interfaces/case_explorer.py` chrome | Done |
 | `interfaces/sv_labels.py` (ID → Swedish label map) | Done |
-| Document metadata badges (`document_type`, `authority_level` values) | Done (display only; field values stay English, see above) |
-| `interfaces/doc_viewer.py` chrome (title, CLI help, print output) | Done |
-| `interfaces/workbench.py` chrome (page, form, results, validation errors) | Done |
-| `interfaces/investigate.py` chrome (CLI help, `--format text` output) | Done (`--format json` keys are a data contract and stay English) |
+| Corpus `access-offboarding-b`, `access-offboarding-c` | Pending |
+| `interfaces/doc_viewer.py`, `interfaces/workbench.py`, `interfaces/investigate.py` chrome | Pending |
+| Document metadata badges (`document_type`, `authority_level` values) | Pending |
 | `evals/corpora/access-lifecycle-large` (large benchmark corpus) | Not started |
 
 ## Known limitations

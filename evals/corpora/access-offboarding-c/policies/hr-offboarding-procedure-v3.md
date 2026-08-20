@@ -1,6 +1,6 @@
-# HR-rutin för avslut, version 3
+# HR Offboarding Procedure, version 3
 
-## HOP-7.3 — Begäran om avslut för medarbetare
+## HOP-7.3 — Employee offboarding request
 
-HR ska skicka in en begäran om inaktivering av ordinära medarbetarkonton vid
-den registrerade avslutstidpunkten.
+HR must submit an ordinary employee account-disablement request at the recorded
+termination time.
