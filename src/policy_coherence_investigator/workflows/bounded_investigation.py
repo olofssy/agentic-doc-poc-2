@@ -8,6 +8,7 @@ from langchain_core.runnables import Runnable
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
+from policy_coherence_investigator.case_data.loader import CaseInput
 from policy_coherence_investigator.investigation import (
     EvidenceNeed,
     EvidenceReference,
@@ -57,8 +58,14 @@ def build_bounded_investigation_graph(
     corpus: PolicyCorpus,
     *,
     retriever: ClauseRetriever | None = None,
+    initial_case: CaseInput | None = None,
 ) -> CompiledStateGraph:
-    """Build a variable-length investigation with deterministic safety and budget controls."""
+    """Build a variable-length investigation with deterministic safety and budget controls.
+
+    ``initial_case``, when provided, adds a node that seeds the question, working scope, and
+    retrieval budget from an agent-visible case so the graph can be invoked with ``{}`` — the
+    zero-input shape LangGraph Studio submits.
+    """
 
     selected_retriever = retriever or LexicalClauseRetriever()
 
@@ -66,6 +73,21 @@ def build_bounded_investigation_graph(
         Runnable[list[BaseMessage], InvestigationResult],
         model.with_structured_output(InvestigationResult),
     )
+
+    def initialize_studio_case(_: BoundedInvestigationState) -> dict[str, object]:
+        assert initial_case is not None
+        review_context = initial_case.case.review_context
+        return {
+            "question": initial_case.case.question,
+            "working_scope": WorkingScope(
+                topic=initial_case.case.question,
+                populations=review_context.populations,
+                access_types=review_context.access_types,
+                geography=review_context.geography,
+                as_of_date=review_context.as_of_date,
+            ),
+            "retrieval_budget": initial_case.case.retrieval_budget,
+        }
 
     def initial_retrieve(state: BoundedInvestigationState) -> dict[str, object]:
         ledger = initialize_ledger(
@@ -197,12 +219,18 @@ def build_bounded_investigation_graph(
         return "reassess_review" if not state.get("termination_reason") else "finish"
 
     builder = StateGraph(BoundedInvestigationState)
+    if initial_case is not None:
+        builder.add_node("initialize_studio_case", initialize_studio_case)
     builder.add_node("initial_retrieve", initial_retrieve)
     builder.add_node("initial_review", initial_review)
     builder.add_node("follow_up_retrieve", follow_up_retrieve)
     builder.add_node("reassess_review", reassess_review)
     builder.add_node("finish", finish)
-    builder.add_edge(START, "initial_retrieve")
+    if initial_case is not None:
+        builder.add_edge(START, "initialize_studio_case")
+        builder.add_edge("initialize_studio_case", "initial_retrieve")
+    else:
+        builder.add_edge(START, "initial_retrieve")
     builder.add_conditional_edges(
         "initial_retrieve",
         route_after_initial_retrieval,

@@ -27,6 +27,48 @@ uv run ruff check .
 Copy `.env.example` to `.env` and set a provider key only when running an
 explicit live evaluation. The deterministic test suite must not call model APIs.
 
+## Observability with LangSmith
+
+LangGraph and the LangChain model integrations emit LangSmith traces automatically; no graph
+instrumentation is needed. Create a LangSmith API key of your own and set:
+
+```bash
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=<your-langsmith-api-key>
+LANGSMITH_PROJECT=policy-coherence-investigator-dev
+```
+
+Run any command that invokes the graph, then open the named project in LangSmith to inspect the
+graph trajectory, model calls, latency, token counts, and estimated cost. The estimate covers only
+calls traced by this application, not all usage of the provider API key.
+
+Traces contain prompts and responses by default. Keep runs on synthetic case data, or configure
+LangSmith masking before using sensitive documents. Set `LANGSMITH_TRACING=false` to run without
+sending traces.
+
+## Visual graph debugging with LangSmith Studio
+
+LangSmith Studio provides a boxes-and-arrows canvas for the bounded investigation graph. It is a
+local, interactive debugging surface, separate from the explicit evaluation runner. Studio runs
+load only agent-visible case data and never load or evaluate a case's hidden oracle.
+
+Install the development dependencies and start the local Agent Server:
+
+```bash
+uv sync
+uv run langgraph dev
+```
+
+The command prints a LangSmith Studio URL for `http://127.0.0.1:2024`; open it in a browser.
+Select one of the case graphs, such as `access-offboarding-b`, and submit an empty JSON input
+(`{}`). Studio then shows the full graph, the route taken by the run, node state, and supports
+node breakpoints.
+
+Studio requires `LANGSMITH_API_KEY` and uses the direct model provider configured in `.env`, so
+each submitted run consumes model tokens. Set `LANGSMITH_TRACING=false` if you do not want normal
+application traces sent to LangSmith. Continue to use `evals/run_case.py` when you need
+deterministic evaluation against the hidden oracle.
+
 ## Investigate a policy question
 
 Run an oracle-free bounded investigation against a controlled corpus:

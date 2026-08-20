@@ -1,0 +1,10 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "access-offboarding-a": "./src/policy_coherence_investigator/interfaces/studio/entrypoints.py:access_offboarding_a",
+    "access-offboarding-b": "./src/policy_coherence_investigator/interfaces/studio/entrypoints.py:access_offboarding_b",
+    "access-offboarding-c": "./src/policy_coherence_investigator/interfaces/studio/entrypoints.py:access_offboarding_c",
+    "access-offboarding-d": "./src/policy_coherence_investigator/interfaces/studio/entrypoints.py:access_offboarding_d"
+  },
+  "env": ".env"
+}
