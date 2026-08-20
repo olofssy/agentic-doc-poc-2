@@ -38,6 +38,7 @@ def run_all_cases(
     *,
     architecture: Architecture = Architecture.BOUNDED,
     provider: str | None = None,
+    retriever_name: str = "lexical",
 ) -> EvaluationSuiteReport:
     """Run all requested cases without letting one provider failure stop the suite."""
 
@@ -45,7 +46,14 @@ def run_all_cases(
     failures: list[CaseExecutionFailure] = []
     for case_id in case_ids:
         try:
-            reports.append(run_case(case_id, architecture=architecture, provider=provider))
+            reports.append(
+                run_case(
+                    case_id,
+                    architecture=architecture,
+                    provider=provider,
+                    retriever_name=retriever_name,
+                )
+            )
         except Exception as error:
             failures.append(
                 CaseExecutionFailure(
@@ -68,6 +76,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         choices=tuple(Architecture),
         default=Architecture.BOUNDED,
     )
+    parser.add_argument(
+        "--retriever",
+        choices=("lexical", "vector"),
+        default="lexical",
+        help="Retrieval mechanism: deterministic lexical matching, or paid OpenAI embeddings.",
+    )
     args = parser.parse_args(argv)
 
     load_dotenv()
@@ -75,6 +89,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         discover_case_ids(),
         architecture=args.architecture,
         provider=args.provider,
+        retriever_name=args.retriever,
     )
     for report in suite.case_reports:
         print_case_report(report)

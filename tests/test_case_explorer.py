@@ -17,6 +17,7 @@ def test_presentation_catalog_describes_every_discoverable_case() -> None:
         "access-offboarding-a",
         "access-offboarding-b",
         "access-offboarding-c",
+        "access-offboarding-d",
     }
     assert all(case.capability_tags for case in catalog.cases)
     assert all(case.resolution_guide for case in catalog.cases)

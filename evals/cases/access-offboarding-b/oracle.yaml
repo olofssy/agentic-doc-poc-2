@@ -14,6 +14,3 @@ forbidden_findings:
   - incompatible_employee_revocation_deadlines
 required_scope_distinctions:
   - ordinary_accounts_vs_privileged_accounts
-acceptable_follow_up_needs:
-  - retrieve_definition
-  - retrieve_population_policy

@@ -99,6 +99,7 @@ def test_workbench_passes_only_the_selected_case_corpus_and_form_values_to_the_r
         "access_types": request.access_types,
         "retrieval_budget": request.retrieval_budget,
         "provider": "openai",
+        "retriever_name": request.retriever,
     }
 
 
@@ -135,15 +136,17 @@ def test_review_question_and_workbench_default_share_the_case_definition() -> No
 
 def test_selected_cases_have_distinct_canonical_questions_and_scope_defaults() -> None:
     cases = load_explorer_cases()
-    case_a, case_b, case_c = (default_workbench_request(case) for case in cases)
+    case_a, case_b, case_c, case_d = (default_workbench_request(case) for case in cases)
 
-    assert len({case_a.question, case_b.question, case_c.question}) == 3
+    assert len({case_a.question, case_b.question, case_c.question, case_d.question}) == 4
     assert case_a.populations == ("contractor",)
     assert case_b.populations == ("employee",)
     assert case_c.populations == ("employee", "contractor")
+    assert case_d.populations == ("partner_assignee",)
     assert case_a.access_types == ("ordinary",)
     assert case_b.access_types == ("ordinary", "privileged")
     assert case_c.access_types == ("ordinary",)
+    assert case_d.access_types == ("ordinary",)
 
 
 def test_expected_outcome_comparison_requires_the_untouched_case_inputs() -> None:
@@ -175,6 +178,52 @@ def test_expected_outcome_comparison_requires_the_untouched_case_inputs() -> Non
     assert evaluate_workbench_report(canonical, selected_case, report) == EvaluationReport(
         ("workflow completed without a structured final result",)
     )
+
+
+def test_retriever_choice_does_not_affect_canonical_status() -> None:
+    selected_case = load_explorer_cases()[0]
+    canonical = default_workbench_request(selected_case)
+    vector_choice = WorkbenchRequest(
+        case_id=canonical.case_id,
+        question=canonical.question,
+        as_of_date=canonical.as_of_date,
+        geography=canonical.geography,
+        populations=canonical.populations,
+        access_types=canonical.access_types,
+        retrieval_budget=canonical.retrieval_budget,
+        retriever="vector",
+    )
+
+    assert canonical.retriever == "lexical"
+    assert is_canonical_request(vector_choice, selected_case)
+
+
+def test_parse_workbench_request_reads_and_validates_the_retriever_choice() -> None:
+    cases = load_explorer_cases()
+    base_form = {
+        "case": ["access-offboarding-c"],
+        "question": ["Do contractor offboarding policies conflict?"],
+        "as_of": ["2026-08-16"],
+        "geography": ["global"],
+        "population": ["contractor"],
+        "access_type": ["ordinary"],
+    }
+
+    request = parse_workbench_request({**base_form, "retriever": ["vector"]}, cases)
+    assert request.retriever == "vector"
+
+    assert parse_workbench_request(base_form, cases).retriever == "lexical"
+
+    with pytest.raises(ValueError, match="Invalid retrieval method"):
+        parse_workbench_request({**base_form, "retriever": ["embedding"]}, cases)
+
+
+def test_workbench_form_offers_a_retrieval_method_toggle() -> None:
+    page = render_workbench_page(load_explorer_cases(), "access-offboarding-a")
+
+    assert 'name="retriever" value="lexical"' in page
+    assert 'name="retriever" value="vector"' in page
+    assert "Retrieval method" in page
 
 
 def test_completed_canonical_run_renders_its_evaluation_status() -> None:

@@ -1,0 +1,14 @@
+case_id: access-offboarding-d
+acceptable_result_categories:
+  - confirmed_conflict
+decisive_clause_sets:
+  - - document_id: access_control_policy_v4
+      clause_id: ACP-4.2.1
+    - document_id: partner_assignment_policy_v1
+      clause_id: PAP-3.1
+required_findings:
+  - incompatible_partner_assignee_revocation_deadlines
+forbidden_findings:
+  - partner_assignee_coverage_confirmed
+required_scope_distinctions:
+  - partner_assignees_are_workforce_identities

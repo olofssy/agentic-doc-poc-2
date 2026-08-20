@@ -14,11 +14,12 @@ from policy_coherence_investigator.case_data.loader import (
 from policy_coherence_investigator.retrieval import PolicyDocument
 
 
-def test_discovers_three_neutral_case_ids() -> None:
+def test_discovers_four_neutral_case_ids() -> None:
     assert discover_case_ids() == [
         "access-offboarding-a",
         "access-offboarding-b",
         "access-offboarding-c",
+        "access-offboarding-d",
     ]
 
 

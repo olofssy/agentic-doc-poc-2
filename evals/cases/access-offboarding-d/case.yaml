@@ -1,0 +1,12 @@
+case_id: access-offboarding-d
+corpus_id: access-offboarding-d
+question: >
+  Do current policies conflict on the deadline for disabling ordinary access
+  for staff who are on an inbound assignment from an external partner, once
+  that assignment ends?
+review_context:
+  as_of_date: 2026-08-16
+  geography: global
+  populations: [partner_assignee]
+  access_types: [ordinary]
+retrieval_budget: 3

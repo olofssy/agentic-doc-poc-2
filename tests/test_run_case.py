@@ -1,8 +1,9 @@
+from pathlib import Path
 from unittest.mock import Mock, call, patch
 
 from evals.evaluator import EvaluationReport
 from evals.run_all import run_all_cases
-from evals.run_case import CaseRunReport, print_case_report
+from evals.run_case import CaseRunReport, _build_retriever, print_case_report
 from policy_coherence_investigator.investigation import (
     CoherenceFinding,
     EvidenceNeed,
@@ -11,6 +12,9 @@ from policy_coherence_investigator.investigation import (
     FindingCategory,
     InvestigationResult,
 )
+from policy_coherence_investigator.retrieval import LexicalClauseRetriever, load_policy_corpus
+
+CORPUS_DIRECTORY = Path("evals/corpora/access-offboarding-a")
 
 
 def test_compact_case_report_prints_summary_and_issues_without_raw_model_json(capsys) -> None:
@@ -59,6 +63,15 @@ def test_compact_case_report_prints_summary_and_issues_without_raw_model_json(ca
     assert "summary: The rules coexist because their account populations differ." in output
     assert "issue: required finding 'x' is missing" in output
     assert "{\"category\"" not in output
+    assert "retriever=lexical" in output
+
+
+def test_build_retriever_selects_lexical_without_touching_embeddings() -> None:
+    corpus = load_policy_corpus(CORPUS_DIRECTORY)
+
+    retriever = _build_retriever("lexical", corpus)
+
+    assert isinstance(retriever, LexicalClauseRetriever)
 
 
 def test_suite_runner_continues_after_an_execution_error() -> None:
@@ -79,7 +92,22 @@ def test_suite_runner_continues_after_an_execution_error() -> None:
     assert suite.execution_failures[0].case_id == "access-offboarding-b"
     assert suite.execution_failures[0].error_type == "RuntimeError"
     assert mocked_run_case.call_args_list == [
-        call("access-offboarding-a", architecture="baseline", provider="openai"),
-        call("access-offboarding-b", architecture="baseline", provider="openai"),
-        call("access-offboarding-c", architecture="baseline", provider="openai"),
+        call(
+            "access-offboarding-a",
+            architecture="baseline",
+            provider="openai",
+            retriever_name="lexical",
+        ),
+        call(
+            "access-offboarding-b",
+            architecture="baseline",
+            provider="openai",
+            retriever_name="lexical",
+        ),
+        call(
+            "access-offboarding-c",
+            architecture="baseline",
+            provider="openai",
+            retriever_name="lexical",
+        ),
     ]

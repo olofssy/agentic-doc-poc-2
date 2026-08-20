@@ -20,6 +20,8 @@ from policy_coherence_investigator.investigation import (
     WorkingScope,
 )
 from policy_coherence_investigator.retrieval import (
+    ClauseRetriever,
+    LexicalClauseRetriever,
     OpenAIEmbeddingClient,
     PolicyClause,
     PolicyCorpus,
@@ -46,6 +48,7 @@ class InvestigationRunReport:
     requested_evidence_needs: tuple[EvidenceNeed, ...]
     termination_reason: str
     ledger: InvestigationLedger | None = None
+    retriever_name: str = "vector"
 
     def as_dict(self) -> dict[str, object]:
         """Return stable structured output without prompts, hidden data, or raw graph state."""
@@ -55,6 +58,7 @@ class InvestigationRunReport:
             "corpus_id": self.corpus_id,
             "result": self.result.model_dump(mode="json") if self.result is not None else None,
             "investigation": {
+                "retriever": self.retriever_name,
                 "retrieval_count": self.retrieval_count,
                 "retrieval_budget": self.retrieval_budget,
                 "termination_reason": self.termination_reason,
@@ -77,7 +81,7 @@ class InvestigationRunReport:
         }
 
 
-def _build_bounded_retriever(corpus: PolicyCorpus) -> VectorClauseRetriever:
+def _build_vector_retriever(corpus: PolicyCorpus) -> VectorClauseRetriever:
     """Embed the corpus with OpenAI so the bounded investigation can bridge vocabulary gaps."""
 
     embedding_client = OpenAIEmbeddingClient()
@@ -86,6 +90,16 @@ def _build_bounded_retriever(corpus: PolicyCorpus) -> VectorClauseRetriever:
     )
     retriever, _ = build_vector_retriever(corpus.clauses, embedding_client, cache_path=cache_path)
     return retriever
+
+
+def _build_retriever(retriever_name: str, corpus: PolicyCorpus) -> ClauseRetriever:
+    """Select the deterministic lexical retriever or the paid OpenAI-embedding retriever."""
+
+    if retriever_name == "lexical":
+        return LexicalClauseRetriever()
+    if retriever_name == "vector":
+        return _build_vector_retriever(corpus)
+    raise ValueError(f"unsupported retriever: {retriever_name!r}")
 
 
 def run_investigation(
@@ -98,6 +112,7 @@ def run_investigation(
     access_types: Sequence[str],
     retrieval_budget: int = 3,
     provider: str | None = None,
+    retriever_name: str = "vector",
 ) -> InvestigationRunReport:
     """Run a bounded investigation using only the supplied question, scope, and corpus."""
 
@@ -113,7 +128,7 @@ def run_investigation(
         as_of_date=as_of_date,
     )
     model = build_chat_model(provider)
-    retriever = _build_bounded_retriever(corpus)
+    retriever = _build_retriever(retriever_name, corpus)
     state = build_bounded_investigation_graph(model, corpus, retriever=retriever).invoke(
         {
             "question": normalized_question,
@@ -145,6 +160,7 @@ def run_investigation(
         requested_evidence_needs=tuple(state.get("requested_evidence_needs", ())),
         termination_reason=state.get("termination_reason", "unknown"),
         ledger=ledger,
+        retriever_name=retriever_name,
     )
 
 
@@ -159,7 +175,7 @@ def print_investigation_report(report: InvestigationRunReport, output_format: st
         evidence_need.kind.value for evidence_need in report.requested_evidence_needs
     ) or "none"
     print(
-        f"category={category} | corpus={report.corpus_id} | "
+        f"category={category} | corpus={report.corpus_id} | retriever={report.retriever_name} | "
         f"retrievals={report.retrieval_count}/{report.retrieval_budget} | "
         f"followups={follow_up_kinds} | termination={report.termination_reason}"
     )
@@ -201,6 +217,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--retrieval-budget", type=_positive_int, default=3)
     parser.add_argument("--provider", choices=("openai", "anthropic"))
+    parser.add_argument(
+        "--retriever",
+        choices=("lexical", "vector"),
+        default="vector",
+        help="Retrieval mechanism: deterministic lexical matching, or paid OpenAI embeddings.",
+    )
     parser.add_argument("--format", choices=("json", "text"), default="json")
     args = parser.parse_args(argv)
 
@@ -214,6 +236,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         access_types=args.access_type,
         retrieval_budget=args.retrieval_budget,
         provider=args.provider,
+        retriever_name=args.retriever,
     )
     print_investigation_report(report, args.format)
     return 0 if report.result is not None else 1

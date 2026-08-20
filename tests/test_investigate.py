@@ -38,7 +38,7 @@ def test_run_investigation_uses_the_supplied_question_and_scope_without_an_oracl
             "policy_coherence_investigator.interfaces.investigate.build_chat_model"
         ) as model_factory,
         patch(
-            "policy_coherence_investigator.interfaces.investigate._build_bounded_retriever",
+            "policy_coherence_investigator.interfaces.investigate._build_vector_retriever",
             return_value=retriever,
         ),
         patch(
@@ -66,6 +66,40 @@ def test_run_investigation_uses_the_supplied_question_and_scope_without_an_oracl
     assert initial_state["working_scope"].access_types == ["ordinary"]
     assert report.retrieval_count == 1
     assert report.ledger == _ledger()
+    assert report.retriever_name == "vector"
+
+
+def test_lexical_retriever_name_skips_embedding_and_selects_lexical_retriever() -> None:
+    result = _result()
+    graph = Mock()
+    graph.invoke.return_value = {
+        "final_result": result,
+        "retrieved_clauses": (),
+        "investigation_ledger": _ledger(),
+        "requested_evidence_needs": (),
+        "termination_reason": "decision_complete",
+    }
+
+    with (
+        patch("policy_coherence_investigator.interfaces.investigate.build_chat_model"),
+        patch(
+            "policy_coherence_investigator.interfaces.investigate.build_bounded_investigation_graph",
+            return_value=graph,
+        ) as graph_factory,
+    ):
+        report = run_investigation(
+            question="Do contractor offboarding policies conflict?",
+            corpus_directory=CORPUS_DIRECTORY,
+            as_of_date=date(2026, 8, 16),
+            geography="global",
+            populations=("contractor",),
+            access_types=("ordinary",),
+            provider="openai",
+            retriever_name="lexical",
+        )
+
+    assert isinstance(graph_factory.call_args.kwargs["retriever"], LexicalClauseRetriever)
+    assert report.retriever_name == "lexical"
 
 
 def test_json_report_contains_the_structured_result_and_concise_metadata(capsys) -> None:

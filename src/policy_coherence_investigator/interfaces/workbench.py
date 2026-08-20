@@ -41,6 +41,7 @@ class WorkbenchRequest:
     populations: tuple[str, ...]
     access_types: tuple[str, ...]
     retrieval_budget: int
+    retriever: str = "lexical"
 
 
 def default_workbench_request(explorer_case: ExplorerCase) -> WorkbenchRequest:
@@ -81,6 +82,9 @@ def parse_workbench_request(
     access_types = _scope_values(
         form.get("access_type", ()), frozenset(default.access_types), "access type"
     )
+    retriever = (form.get("retriever", ("lexical",))[0] or "lexical").strip().lower()
+    if retriever not in {"lexical", "vector"}:
+        raise ValueError("Invalid retrieval method selection.")
     return WorkbenchRequest(
         case_id=default.case_id,
         question=question,
@@ -89,6 +93,7 @@ def parse_workbench_request(
         populations=populations,
         access_types=access_types,
         retrieval_budget=default.retrieval_budget,
+        retriever=retriever,
     )
 
 
@@ -110,13 +115,27 @@ def run_workbench_investigation(
         access_types=request.access_types,
         retrieval_budget=request.retrieval_budget,
         provider=provider,
+        retriever_name=request.retriever,
     )
 
 
 def is_canonical_request(request: WorkbenchRequest, explorer_case: ExplorerCase) -> bool:
-    """Require exact case inputs before applying the case's hidden evaluation oracle."""
+    """Require exact case inputs before applying the case's hidden evaluation oracle.
 
-    return request == default_workbench_request(explorer_case)
+    The retrieval method is a run preference, not part of the case's canonical
+    question and scope, so it is deliberately excluded from this comparison.
+    """
+
+    default = default_workbench_request(explorer_case)
+    return (
+        request.case_id == default.case_id
+        and request.question == default.question
+        and request.as_of_date == default.as_of_date
+        and request.geography == default.geography
+        and request.populations == default.populations
+        and request.access_types == default.access_types
+        and request.retrieval_budget == default.retrieval_budget
+    )
 
 
 def evaluate_workbench_report(
@@ -369,6 +388,7 @@ def _render_form(request: WorkbenchRequest, default_request: WorkbenchRequest) -
   </div>
   <fieldset><legend>Populations in scope</legend><div class="choices">{_render_choices('population', default_request.populations, request.populations, default_request.populations)}</div></fieldset>
   <fieldset><legend>Access types in scope</legend><div class="choices">{_render_choices('access_type', default_request.access_types, request.access_types, default_request.access_types)}</div></fieldset>
+  <fieldset><legend>Retrieval method</legend><div class="choices">{_render_retriever_choices(request.retriever)}</div></fieldset>
   <button id="investigate-button" type="submit">Investigate</button>
   <p id="investigation-status" role="status" aria-live="polite" hidden>Investigating policy evidence…</p>
 </form>"""
@@ -388,6 +408,19 @@ def _render_choices(
         f'data-canonical-checked="{str(value in canonical).lower()}"> '
         f"{html.escape(value.capitalize())}</label>"
         for value in values
+    )
+
+
+def _render_retriever_choices(selected_retriever: str) -> str:
+    options = (
+        ("lexical", "Lexical (deterministic, free)"),
+        ("vector", "Vector (OpenAI embeddings, paid)"),
+    )
+    return "".join(
+        f'<label class="choice"><input type="radio" name="retriever" value="{value}"'
+        f"{' checked' if value == selected_retriever else ''}> "
+        f"{html.escape(label)}</label>"
+        for value, label in options
     )
 
 
@@ -581,7 +614,7 @@ def _render_metadata(report: InvestigationRunReport) -> str:
     follow_ups = ", ".join(
         f"{need.kind.value} ({need.target})" for need in report.requested_evidence_needs
     ) or "none"
-    return f"""<p class="metadata">Corpus: {html.escape(report.corpus_id)} · Retrievals: {report.retrieval_count}/{report.retrieval_budget} · Termination: {html.escape(report.termination_reason)}<br>Follow-up evidence: {html.escape(follow_ups)}</p>"""
+    return f"""<p class="metadata">Corpus: {html.escape(report.corpus_id)} · Retriever: {html.escape(report.retriever_name)} · Retrievals: {report.retrieval_count}/{report.retrieval_budget} · Termination: {html.escape(report.termination_reason)}<br>Follow-up evidence: {html.escape(follow_ups)}</p>"""
 
 
 def _selected_case(cases: tuple[ExplorerCase, ...], case_id: str | None) -> ExplorerCase:

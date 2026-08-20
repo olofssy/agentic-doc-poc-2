@@ -23,8 +23,10 @@ from policy_coherence_investigator.investigation import (
 from policy_coherence_investigator.retrieval import (
     ClauseRetriever,
     LexicalClauseRetriever,
+    OpenAIEmbeddingClient,
     PolicyClause,
     PolicyCorpus,
+    build_vector_retriever,
     load_policy_corpus,
 )
 from policy_coherence_investigator.workflows import (
@@ -33,6 +35,7 @@ from policy_coherence_investigator.workflows import (
 )
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+_VECTOR_CACHE_DIRECTORY = REPOSITORY_ROOT / "local" / "vector-cache"
 
 
 @dataclass(frozen=True)
@@ -48,6 +51,7 @@ class CaseRunReport:
     termination_reason: str
     requested_evidence_needs: tuple[EvidenceNeed, ...]
     evaluation: EvaluationReport
+    retriever_name: str = "lexical"
 
     @property
     def passed(self) -> bool:
@@ -71,6 +75,7 @@ def run_case(
     *,
     architecture: Architecture = Architecture.BOUNDED,
     provider: str | None = None,
+    retriever_name: str = "lexical",
 ) -> CaseRunReport:
     """Invoke one architecture, then load the hidden oracle only for evaluation."""
 
@@ -82,7 +87,7 @@ def run_case(
     # Every architecture must retrieve through the same retriever, or a result
     # difference could reflect a retrieval-quality gap rather than the
     # architecture's own trajectory.
-    retriever = LexicalClauseRetriever()
+    retriever = _build_retriever(retriever_name, corpus)
 
     run = _ARCHITECTURE_RUNNERS[architecture](model, corpus, case, retriever)
 
@@ -112,7 +117,25 @@ def run_case(
         termination_reason=run.termination_reason,
         requested_evidence_needs=run.requested_evidence_needs,
         evaluation=evaluation,
+        retriever_name=retriever_name,
     )
+
+
+def _build_retriever(retriever_name: str, corpus: PolicyCorpus) -> ClauseRetriever:
+    """Select the deterministic lexical retriever or the paid OpenAI-embedding retriever."""
+
+    if retriever_name == "lexical":
+        return LexicalClauseRetriever()
+    if retriever_name == "vector":
+        embedding_client = OpenAIEmbeddingClient()
+        cache_path = (
+            _VECTOR_CACHE_DIRECTORY / f"{corpus.corpus_id}-{embedding_client.model_id}.json"
+        )
+        retriever, _ = build_vector_retriever(
+            corpus.clauses, embedding_client, cache_path=cache_path
+        )
+        return retriever
+    raise ValueError(f"unsupported retriever: {retriever_name!r}")
 
 
 def _run_fixed_retrieve_and_compare_architecture(
@@ -191,7 +214,7 @@ def print_case_report(report: CaseRunReport) -> None:
         f"{report.case_id}: {status} | {report.architecture} | category={category} | "
         f"retrievals={report.retrieval_count}/{report.retrieval_budget} | "
         f"followups={follow_up_kinds} | "
-        f"termination={report.termination_reason}"
+        f"termination={report.termination_reason} | retriever={report.retriever_name}"
     )
     if report.result is not None:
         print(f"  summary: {textwrap.shorten(report.result.summary, width=180, placeholder='…')}")
@@ -211,10 +234,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         choices=tuple(Architecture),
         default=Architecture.BOUNDED,
     )
+    parser.add_argument(
+        "--retriever",
+        choices=("lexical", "vector"),
+        default="lexical",
+        help="Retrieval mechanism: deterministic lexical matching, or paid OpenAI embeddings.",
+    )
     args = parser.parse_args(argv)
 
     load_dotenv()
-    report = run_case(args.case_id, architecture=args.architecture, provider=args.provider)
+    report = run_case(
+        args.case_id,
+        architecture=args.architecture,
+        provider=args.provider,
+        retriever_name=args.retriever,
+    )
     print_case_report(report)
     return 0 if report.passed else 1
 

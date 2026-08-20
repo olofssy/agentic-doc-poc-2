@@ -113,3 +113,48 @@ cases:
           clause_id: CMP-6.4
         label: Coverage probe
         explanation: Governs contractor review but supplies no revocation deadline.
+
+  - case_id: access-offboarding-d
+    display_name: Partner assignee deadline conflicts with the workforce rule
+    summary: >
+      This case tests whether the investigator resolves the meaning of workforce
+      identity for a population named in neither policy directly, then compares
+      the resulting workforce revocation deadline with the partner-assignment
+      retention rule.
+    capability_tags:
+      - controlled policy retrieval
+      - terminology and population scope
+      - cross-policy deadline comparison
+      - confirmed-conflict identification
+    resolution_guide: >
+      Compare the workforce revocation deadline with the partner-assignment
+      retention period, then retrieve the definition establishing that a partner
+      assignee holds a workforce identity. The definition makes the two rules
+      concurrently applicable to partner assignees, so the deadlines are
+      incompatible.
+    document_roles:
+      - document_id: partner_assignment_policy_v1
+        kind: policy_rule
+        explanation: Permits retaining a partner assignee's access after the assignment ends.
+      - document_id: identity_definitions_v2
+        kind: term_definition
+        explanation: Establishes that a partner assignee holds a workforce identity.
+      - document_id: access_control_policy_v4
+        kind: policy_rule
+        explanation: Sets the workforce revocation deadline that applies once that is resolved.
+    clause_roles:
+      - reference:
+          document_id: identity_definitions_v2
+          clause_id: IDD-2.6
+        label: Scope resolver
+        explanation: Establishes that partner assignees are workforce identities.
+      - reference:
+          document_id: partner_assignment_policy_v1
+          clause_id: PAP-3.1
+        label: Conflict evidence
+        explanation: Permits partner-assignee access retention after the assignment ends.
+      - reference:
+          document_id: access_control_policy_v4
+          clause_id: ACP-4.2.1
+        label: Conflict evidence
+        explanation: Sets the workforce revocation deadline, retrieved only as a follow-up.

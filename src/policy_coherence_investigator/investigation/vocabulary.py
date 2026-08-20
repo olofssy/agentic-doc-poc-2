@@ -12,6 +12,10 @@ FINDING_ID_DESCRIPTIONS = {
     "contractor_offboarding_deadline_insufficiently_governed": (
         "The retrieved evidence does not adequately govern a contractor offboarding deadline."
     ),
+    "incompatible_partner_assignee_revocation_deadlines": (
+        "Concurrently applicable policies prescribe incompatible partner-assignee access "
+        "revocation deadlines."
+    ),
 }
 
 SCOPE_DISTINCTION_ID_DESCRIPTIONS = {
@@ -24,6 +28,10 @@ SCOPE_DISTINCTION_ID_DESCRIPTIONS = {
     ),
     "employee_and_contractor_coverage": (
         "The cited evidence distinguishes or jointly governs employee and contractor coverage."
+    ),
+    "partner_assignees_are_workforce_identities": (
+        "Partner assignees are within the stated workforce-identity population for the cited "
+        "policy context."
     ),
 }
 
