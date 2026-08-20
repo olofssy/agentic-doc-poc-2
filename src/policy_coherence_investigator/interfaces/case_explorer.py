@@ -32,8 +32,6 @@ from policy_coherence_investigator.investigation.models import EvidenceReference
 from policy_coherence_investigator.retrieval import PolicyClause, PolicyCorpus, load_policy_corpus
 from policy_coherence_investigator.retrieval.corpus import LoadedPolicyDocument
 
-from .sv_labels import humanize_sv
-
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_PRESENTATION_CATALOG = REPOSITORY_ROOT / "evals" / "presentation" / "cases.yaml"
 
@@ -193,11 +191,11 @@ def render_explorer_page(
     )
     sidebar = "".join(render_case_link(case, case is selected_case) for case in cases)
     return f"""<!doctype html>
-<html lang="sv">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fallutforskare för policykoherens</title>
+  <title>Policy coherence evaluation case explorer</title>
   <style>
     :root {{ color-scheme: light; font-family: ui-sans-serif, system-ui, sans-serif;
       color: #18202a; background: #f7f8fa; }}
@@ -250,8 +248,8 @@ def render_explorer_page(
 <body>
   <main>
     <nav>
-      <h1>Fallutforskare</h1>
-      <p>Skrivskyddade syntetiska policykoherensfall för en mänsklig demopublik.</p>
+      <h1>Case explorer</h1>
+      <p>Read-only synthetic policy-coherence cases for a human demo audience.</p>
       {sidebar}
     </nav>
     <article>{render_case_details(selected_case)}</article>
@@ -272,7 +270,7 @@ def make_request_handler(cases: tuple[ExplorerCase, ...]) -> type[BaseHTTPReques
             selected_case_id = parse_qs(parsed.query).get("case", [None])[0]
             known_case_ids = {case.presentation.case_id for case in cases}
             if selected_case_id is not None and selected_case_id not in known_case_ids:
-                self.send_error(HTTPStatus.NOT_FOUND, "Okänt fall")
+                self.send_error(HTTPStatus.NOT_FOUND, "Unknown case")
                 return
             page = render_explorer_page(cases, selected_case_id).encode()
             self.send_response(HTTPStatus.OK)
@@ -290,19 +288,19 @@ def make_request_handler(cases: tuple[ExplorerCase, ...]) -> type[BaseHTTPReques
 def main() -> None:
     """Serve the human-only explorer locally without model calls or evaluation runs."""
 
-    parser = argparse.ArgumentParser(description="Bläddra bland syntetiska policyutvärderingsfall.")
-    parser.add_argument("--host", default="127.0.0.1", help="Värdgränssnitt att lyssna på.")
-    parser.add_argument("--port", type=int, default=8766, help="TCP-port att lyssna på.")
+    parser = argparse.ArgumentParser(description="Browse synthetic policy evaluation cases.")
+    parser.add_argument("--host", default="127.0.0.1", help="Host interface to listen on.")
+    parser.add_argument("--port", type=int, default=8766, help="TCP port to listen on.")
     args = parser.parse_args()
 
     cases = load_explorer_cases()
     server = ThreadingHTTPServer((args.host, args.port), make_request_handler(cases))
-    print(f"Fallutforskaren körs på http://{args.host}:{args.port}")
-    print("Tryck Ctrl+C för att stoppa.")
+    print(f"Case explorer running at http://{args.host}:{args.port}")
+    print("Press Ctrl+C to stop.")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nFallutforskaren stoppad.")
+        print("\nCase explorer stopped.")
     finally:
         server.server_close()
 
@@ -357,24 +355,22 @@ def render_case_details(explorer_case: ExplorerCase) -> str:
     case = explorer_case.case_input.case
     tags = "".join(f"<li>{html.escape(tag)}</li>" for tag in presentation.capability_tags)
     return f"""
-<p class="eyebrow">Fall-ID: {html.escape(case.case_id)}</p>
+<p class="eyebrow">Case ID: {html.escape(case.case_id)}</p>
 <h2>{html.escape(presentation.display_name)}</h2>
 <p class="summary">{html.escape(presentation.summary)}</p>
 <section class="cards">
-  <div class="card"><h4>Granskningsfråga</h4><p>{html.escape(case.question)}</p></div>
-  <div class="card"><h4>Granskningskontext</h4>
-    <p>Per {case.review_context.as_of_date.isoformat()}<br>
-    Geografi: {html.escape(case.review_context.geography)}</p></div>
-  <div class="card"><h4>Hämtningsbudget</h4><p>{case.retrieval_budget} iterationer</p></div>
-  <div class="card"><h4>Testade förmågor</h4><ul>{tags}</ul></div>
+  <div class="card"><h4>Review question</h4><p>{html.escape(case.question)}</p></div>
+  <div class="card"><h4>Review context</h4><p>As of {case.review_context.as_of_date.isoformat()}<br>
+    Geography: {html.escape(case.review_context.geography)}</p></div>
+  <div class="card"><h4>Retrieval budget</h4><p>{case.retrieval_budget} iterations</p></div>
+  <div class="card"><h4>Capabilities exercised</h4><ul>{tags}</ul></div>
 </section>
-<h3>Mänsklig lösningsguide</h3>
+<h3>Human resolution guide</h3>
 <p class="summary">{html.escape(presentation.resolution_guide)}</p>
 {_render_oracle_notes(explorer_case.oracle)}
-<h3>Policykorpus</h3>
-<p class="notice">Alla policydokument är hopfällda från start. Metadatamärken förklarar
-deterministisk tillämplighet; lila märken identifierar orakelutsett avgörande underlag
-för denna demo.</p>
+<h3>Policy corpus</h3>
+<p class="notice">All policy documents start collapsed. Metadata badges explain deterministic
+applicability; purple badges identify oracle-designated decisive evidence for this demo.</p>
 {''.join(_render_document(document, explorer_case) for document in explorer_case.corpus.documents)}
 """
 
@@ -385,22 +381,20 @@ def _render_oracle_notes(oracle: CaseOracle) -> str:
         for clause_set in oracle.decisive_clause_sets
     )
     return f"""
-<h3>Demoanteckningar för utvärdering</h3>
-<p class="notice">Dessa orakelbaserade anteckningar visas endast av denna lokala mänskliga
-utforskare. De får aldrig lämnas till den utredare som testas.</p>
+<h3>Demo evaluation notes</h3>
+<p class="notice">These oracle-backed notes are shown only by this local human explorer. They
+must never be supplied to the investigator under test.</p>
 <section class="cards">
-  <div class="card"><h4>Förväntad resultatkategori</h4>
+  <div class="card"><h4>Expected result category</h4>
     <p>{html.escape(_humanize(oracle.acceptable_result_categories[0]))}</p></div>
-  <div class="card"><h4>Nödvändig omfångsdistinktion</h4>
+  <div class="card"><h4>Required scope distinction</h4>
     <ul>{_render_humanized_list(oracle.required_scope_distinctions)}</ul></div>
-  <div class="card"><h4>Acceptabel uppföljning</h4>
+  <div class="card"><h4>Acceptable follow-up</h4>
     <ul>{_render_humanized_list(oracle.acceptable_follow_up_needs)}</ul></div>
-  <div class="card"><h4>Skyddsregler</h4>
-    <ul>{_render_humanized_list(
-      oracle.forbidden_findings, prefix="Dra inte slutsatsen: "
-    )}</ul></div>
+  <div class="card"><h4>Guardrails</h4>
+    <ul>{_render_humanized_list(oracle.forbidden_findings, prefix="Do not conclude: ")}</ul></div>
 </section>
-<h4>Orakelutsedd avgörande bestämmelseuppsättning</h4>
+<h4>Oracle-designated decisive clause set</h4>
 <ul>{decisive_sets}</ul>
 """
 
@@ -418,7 +412,7 @@ def _render_document(document: LoadedPolicyDocument, explorer_case: ExplorerCase
         (
             _badge(manifest.document_type.replace("_", " "), "meta"),
             _badge(manifest.authority_level.replace("_", " "), "meta"),
-            _badge(f"Gäller från {manifest.effective_from.isoformat()}", "meta"),
+            _badge(f"Effective {manifest.effective_from.isoformat()}", "meta"),
             _badge(", ".join(manifest.geography), "meta"),
             applicability_badge,
         )
@@ -443,7 +437,7 @@ def _render_clause(clause: PolicyClause, explorer_case: ExplorerCase) -> str:
     clause_id = clause.clause_id
     badges: list[str] = []
     if (document_id, clause_id) in _decisive_references(explorer_case.oracle):
-        badges.append(_badge("Avgörande underlag", "decisive"))
+        badges.append(_badge("Decisive evidence", "decisive"))
     for role in explorer_case.presentation.clause_roles:
         if (role.reference.document_id, role.reference.clause_id) == (document_id, clause_id):
             badges.append(_badge(role.label, "role"))
@@ -466,12 +460,12 @@ def _applicability_badge(
     review_geography: str,
 ) -> str:
     if status == "superseded":
-        return _badge("Utesluten på grund av status", "superseded")
+        return _badge("Excluded by status", "superseded")
     if effective_from > review_date:
-        return _badge("Ännu inte i kraft", "excluded")
+        return _badge("Not yet effective", "excluded")
     if review_geography not in geography:
-        return _badge("Utanför granskningsgeografin", "excluded")
-    return _badge("Aktuell och inom omfånget", "current")
+        return _badge("Outside review geography", "excluded")
+    return _badge("Current and in scope", "current")
 
 
 def _decisive_references(oracle: CaseOracle) -> set[tuple[str, str]]:
@@ -497,11 +491,11 @@ def _document_role(
 
 def _document_role_label(kind: DocumentRoleKind) -> str:
     return {
-        DocumentRoleKind.POLICY_RULE: "Hämtningsmål: policyregel",
-        DocumentRoleKind.TERM_DEFINITION: "Hämtningsmål: termdefinition",
-        DocumentRoleKind.LOCAL_EXCEPTION: "Hämtningsmål: lokalt undantag",
-        DocumentRoleKind.GOVERNANCE_PRECEDENCE: "Hämtningsmål: styrning / prejudikat",
-        DocumentRoleKind.CONTEXT_ONLY: "Endast kontext",
+        DocumentRoleKind.POLICY_RULE: "Retrieval target: policy rule",
+        DocumentRoleKind.TERM_DEFINITION: "Retrieval target: term definition",
+        DocumentRoleKind.LOCAL_EXCEPTION: "Retrieval target: local exception",
+        DocumentRoleKind.GOVERNANCE_PRECEDENCE: "Retrieval target: governance / precedence",
+        DocumentRoleKind.CONTEXT_ONLY: "Context only",
     }[kind]
 
 
@@ -511,12 +505,12 @@ def _render_reference(reference: EvidenceReference) -> str:
 
 def _render_humanized_list(values: list[str], prefix: str = "") -> str:
     if not values:
-        return "<li>Inget registrerat</li>"
+        return "<li>None recorded</li>"
     return "".join(f"<li>{html.escape(prefix + _humanize(value))}</li>" for value in values)
 
 
 def _humanize(value: object) -> str:
-    return humanize_sv(value)
+    return str(value).replace("_", " ").capitalize()
 
 
 def _badge(label: str, style: str) -> str:

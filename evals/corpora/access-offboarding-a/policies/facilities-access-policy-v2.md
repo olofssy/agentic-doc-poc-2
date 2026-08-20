@@ -1,6 +1,6 @@
-# Policy för åtkomst till lokaler, version 2
+# Facilities Access Policy, version 2
 
-## FAP-6.1 — Behörighet till byggnader
+## FAP-6.1 — Building credentials
 
-Fysisk behörighet till byggnader får förbli aktiv fram till slutet av den
-sista arbetsdagen för att möjliggöra återlämning av utrustning.
+Physical building credentials may remain active until the end of the final
+working day to permit equipment return.

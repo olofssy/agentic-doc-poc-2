@@ -22,7 +22,7 @@ from .contracts import ClauseRetriever, RetrievedClause
 from .corpus import PolicyClause
 from .rendering import render_clause_for_retrieval
 
-_TOKEN_PATTERN = re.compile(r"[a-z0-9åäö]+")
+_TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 _CACHE_VERSION = 1
 
 
