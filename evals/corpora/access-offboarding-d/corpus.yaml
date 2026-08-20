@@ -40,13 +40,13 @@ documents:
     status: superseded
     authority_level: corporate_policy
     geography: [global]
-  - document_id: remote_work_policy_v2
-    document_type: policy
-    title: Remote Work Policy
-    path: policies/remote-work-policy-v2.md
-    effective_from: 2025-05-01
+  - document_id: hr_offboarding_procedure_v3
+    document_type: procedure
+    title: HR Offboarding Procedure
+    path: policies/hr-offboarding-procedure-v3.md
+    effective_from: 2025-10-01
     status: current
-    authority_level: corporate_policy
+    authority_level: procedure
     geography: [global]
   - document_id: privileged_access_standard_v2
     document_type: standard

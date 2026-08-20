@@ -117,21 +117,29 @@ cases:
   - case_id: access-offboarding-d
     display_name: Partner assignee deadline conflicts with the workforce rule
     summary: >
-      This case tests whether the investigator resolves the meaning of workforce
-      identity for a population named in neither policy directly, then compares
-      the resulting workforce revocation deadline with the partner-assignment
-      retention rule.
+      This case tests whether the investigator, having learned that a partner
+      assignee holds a workforce identity, goes on to retrieve the workforce
+      revocation deadline rather than settling for a nearby but wrong-population
+      rule already in hand. The initial retrieval is deliberately weighted
+      against surfacing that deadline, so reaching it usually takes a follow-up
+      retrieval — this case is intended to exercise that loop, not to pass
+      reliably every run.
     capability_tags:
       - controlled policy retrieval
       - terminology and population scope
+      - follow-up retrieval triggered by a definition
       - cross-policy deadline comparison
       - confirmed-conflict identification
     resolution_guide: >
-      Compare the workforce revocation deadline with the partner-assignment
-      retention period, then retrieve the definition establishing that a partner
-      assignee holds a workforce identity. The definition makes the two rules
-      concurrently applicable to partner assignees, so the deadlines are
-      incompatible.
+      The initial retrieval surfaces the partner-assignment retention rule and the
+      definition establishing that a partner assignee holds a workforce identity,
+      but usually not the workforce revocation deadline itself, and it also
+      surfaces a distractor deadline scoped to ordinary employee accounts (which
+      does not cover partner assignees). Recognising that the definition implies
+      a second, unretrieved rule applies — rather than settling for the
+      distractor — is what should trigger a follow-up retrieval; once it
+      returns, the workforce deadline and the assignment retention period are
+      directly incompatible.
     document_roles:
       - document_id: partner_assignment_policy_v1
         kind: policy_rule
@@ -141,7 +149,10 @@ cases:
         explanation: Establishes that a partner assignee holds a workforce identity.
       - document_id: access_control_policy_v4
         kind: policy_rule
-        explanation: Sets the workforce revocation deadline that applies once that is resolved.
+        explanation: Sets the workforce revocation deadline that usually must be fetched as a follow-up.
+      - document_id: hr_offboarding_procedure_v3
+        kind: context_only
+        explanation: A same-shaped deadline for ordinary employee accounts that does not cover partner assignees.
     clause_roles:
       - reference:
           document_id: identity_definitions_v2

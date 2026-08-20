@@ -1,13 +1,19 @@
 # Sammanfattning
 
 <details open>
-<summary><strong>Uppgiften: instruktioner / mitt fokus </strong></summary>
+<summary><strong>Uppgiften: instruktioner </strong></summary>
  <!-- Syfte: påminna om uppgiften, klargöra hur jag prioriterat (samt min roll?)  -->
 
 Uppgiftsinstruktioner <!-- Väldigt öppna! -->
 - Hitta use-case dokumentprocessering, som motiverar ett "agentiskt system" (jmf workflow)
 - Använd ramverk såsom LangGraph / Agno
 - Mer: Prova RAG; no-vibe coding, Codex 5.6+, ~3h
+
+</details>
+
+<details open>
+<summary><strong>Uppgiften: mitt fokus </strong></summary>
+ <!-- Syfte: påminna om uppgiften, klargöra hur jag prioriterat (samt min roll?)  -->
 
 Mitt fokus 
 - Hitta "realistiskt" use-case *som går att utvärdera* (och förstå)
@@ -23,7 +29,7 @@ Mitt fokus
 Exempel dokumenttyper: Fakturor, produktbeskrivningar, användarvillkor, (externa)regleringar, juridiska avtal, CV:n
 
 Vad utmärker problem där linjära workflow ej räcker?
-- open-endedness
+- open-endedness; beslutsväg beror på bedömmnignar/evidens
 - selective tool use
 - "miljö" som utforskas (?)
 
@@ -44,7 +50,7 @@ Spektrum: Linear workflow -> non-linear -> agentic?
 
 Dimensioner
 - Flödesvägar i grafen (linjär, branching, loopar),
-- Actions
+- Actions/tools
     - antal: få -> många
     - åtkomsts-/behörightsnivåer och flexibilitet - t.ex. get_time vs rag_retrieve(...) vs readonly-DB vs sudo bash shell?
 - (State vs stateless?)
