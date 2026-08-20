@@ -221,6 +221,27 @@ and corpus data, evaluator-only expectations, and optional human presentation
 material. This step should follow retrieval comparison; otherwise an end-to-end
 failure would conflate retriever weakness with reasoning or trajectory weakness.
 
+## Future idea: constrained query DSL for evidence requests (not scheduled)
+
+Today a follow-up evidence request is one free-text `query` string
+(`EvidenceNeed.query`), ranked the same way as the initial question. A plausible later evolution
+is a small, validated query object instead of free text — for example
+`query_clauses(filters: list[Filter])`, where `Filter` is a Pydantic model built from an
+allowlisted `field`/`operator`/`value`, scoped to clauses that already passed applicability
+filtering.
+
+**Motivator:** this closes filter-combination gaps a fixed pipeline cannot anticipate (for
+example, "mentions both X and Y, excluding already-cited clauses") without opening the far larger
+surface of a general-purpose query language or shell access. In this codebase specifically, an
+unconstrained bash or SQL tool could reach `oracle.yaml` sitting beside `case.yaml` on disk and
+defeat the hidden-oracle boundary the whole evaluation design depends on. A typed filter list
+keeps every value individually validated and never lets a raw string reach an interpreter, while
+still allowing arbitrary combinations of permitted filters.
+
+This is a speculative note, not a committed step; it would need its own design pass (which
+filters, how they interact with lexical/vector ranking) before promotion into the step sequence
+above.
+
 ## Decision rule
 
 Do not expand into production ingestion, general policy search, or autonomous

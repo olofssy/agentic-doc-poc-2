@@ -1,10 +1,7 @@
-# Project summary
-
-> A free-form working page for notes, reflections, and sketches. Edit this file directly or run
-> `uv run agentic-doc-poc-summary` and open <http://127.0.0.1:8767/>.
+# Sammanfattning
 
 <details open>
-<summary><strong>Uppgiften: instruktioner, fokus / </strong></summary>
+<summary><strong>Uppgiften: instruktioner / mitt fokus </strong></summary>
  <!-- Syfte: påminna om uppgiften, klargöra hur jag prioriterat (samt min roll?)  -->
 
 Uppgiftsinstruktioner <!-- Väldigt öppna! -->
@@ -58,13 +55,13 @@ Dimensioner
 <summary><strong>Valt use case</strong></summary>
 
 Två idéer:
-- (1) "Warranty claim investigator" 
+- (1) "Warranty claim investigator"
     - Bedömning av garantiärenden för industripump  <!--Avslogs pga svårt motivera RAG-->
     - input: Garanti-formulär från kund + produktbeskrivning med villkor
-    - miljö / actions: läs inspektionsrapporter, driftsloggar
+    - miljö / actions: begär & läs; inspektionsrapporter, driftsloggar
     - output: bevilja / avslå / eskalera inkl. motivering med dokumentreferenser
 
-- **(2) "Policy coherence investigator" 
+- **(2) "Policy coherence investigator"** 
     - Vad: Bedömning av intern "policykoherens" på företag**
     - input: Fråga ("Är våra polcies kring återkallande systemaccesser vid uppsägning tvetydiga?")
     - miljö / actions: Sök(RAG) & läs i policy-arkiv
@@ -72,14 +69,6 @@ Två idéer:
     - Möjliga flöden:
         - Initial retrive+review -> finish
         - Initial retrive+review -> (loop: re-retrieve -> re-review) -> finish
-    
-Hur agentisk? Dimensionerna igen:
-- Flödesvägar i grafen (linjär, branching, *loopar*),
-- Actions
-    - antal=1
-    - åtkomsts-/behörightsnivåer  & flexibilitet - t.ex. get_time() vs *rag_retrieve(...)* vs readonly-DB vs bash shell?
-- (*State* vs stateless?)
-
 
 - TODO: Se use-case exploren: http://127.0.0.1:8767
 
@@ -87,37 +76,31 @@ Hur agentisk? Dimensionerna igen:
 
 <details>
 <summary><strong>Go-to-prod förbättringar / blandade utmaningar</strong></summary>
-
 <!-- Syfte: Vad hade varit naturliga "nästa steg" om detta hade byggts som en faktiskt produkt?-->
 
-
-Att testa:
-- Större dataset, äkta dokument (utmaning: vad är ground-truth?)
+- Större dataset, äkta dokument (utmaning: vad är ground-truth? hur utvärdera "mjuka" aspekter?)
 - Benchmarka mot baseline(s):
     - Linjärt flöde med/utan RAG
 
-Integrera i produktionsmiljöer: hur exponeras dokument, hur lösa accesser etc?
-
-Observabilityet: beslut måsta kunna förklaras(?)
+- hur exponera dokument, hur lösa (tool)accesser?
+- Observabilityet: beslut måsta kunna förklaras(?)
 
 </details>
 
 <details>
-<summary><strong>Sketches and images</strong></summary>
-
+<summary><strong>Bilder</strong></summary>
 <!-- Put image files in docs/human-zone/assets/ and link them with standard Markdown. -->
 
-Example:
-
-![Description of the sketch](assets/test.png)
+LangGraph-grafen
+![Grafen](assets/lg_graph.png)
 
 </details>
 
 <details>
-<summary><strong>Next session</strong></summary>
+<summary><strong>Scripts</strong></summary>
 
-<!-- What is the smallest useful next step? -->
 
-Write here.
+uv run policy-coherence-investigator-docs docs/human-zone/project-summary.md
+
 
 </details>

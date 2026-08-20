@@ -46,6 +46,43 @@ def test_renderer_escapes_non_supported_html() -> None:
     assert "&lt;script&gt;" in page
 
 
+def test_renderer_strips_trailing_inline_comments() -> None:
+    page = render_markdown("Uppgiftsinstruktioner <!-- Väldigt öppna! -->")
+
+    assert "Väldigt öppna" not in page
+    assert "<p>Uppgiftsinstruktioner</p>" in page
+
+
+def test_renderer_strips_standalone_comment_lines() -> None:
+    page = render_markdown("# Heading\n\n<!-- Syfte: redovisa tankeprocess -->\n\nBody.")
+
+    assert "Syfte" not in page
+
+
+def test_renderer_keeps_comment_markers_literal_inside_code_blocks() -> None:
+    page = render_markdown("```\n<!-- not a comment here -->\n```")
+
+    assert "&lt;!-- not a comment here --&gt;" in page
+
+
+def test_renderer_nests_list_items_by_indentation() -> None:
+    page = render_markdown("- parent\n    - child\n    - child two\n- parent two")
+
+    assert page == (
+        "<ul>\n<li>parent</li>\n<ul>\n<li>child</li>\n<li>child two</li>\n"
+        "</ul>\n<li>parent two</li>\n</ul>"
+    )
+
+
+def test_renderer_closes_nested_lists_when_returning_to_a_shallower_level() -> None:
+    page = render_markdown("- a\n    - b\n        - c\n- d")
+
+    assert page == (
+        "<ul>\n<li>a</li>\n<ul>\n<li>b</li>\n<ul>\n<li>c</li>\n</ul>\n</ul>\n"
+        "<li>d</li>\n</ul>"
+    )
+
+
 def test_load_markdown_reports_a_clear_error_for_a_missing_file(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="does not exist"):
         load_markdown(tmp_path / "missing.md")

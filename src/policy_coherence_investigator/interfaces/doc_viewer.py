@@ -50,12 +50,18 @@ def render_markdown(markdown: str) -> str:
     forced closed on render, even if the source says ``<details open>`` -
     a freshly loaded page should never dump everything at once. All other
     user-provided text is escaped before HTML is emitted.
+
+    HTML comments (``<!-- ... -->``) are stripped wherever they appear -
+    on their own line or trailing other content - except inside fenced
+    code blocks, where they're left as literal text. List items nest
+    based on leading indentation, so a bullet indented further than its
+    parent renders inside a nested ``<ul>``.
     """
     rendered: list[str] = []
     paragraph: list[str] = []
     in_code_block = False
     code_lines: list[str] = []
-    in_list = False
+    list_indents: list[int] = []
 
     def flush_paragraph() -> None:
         if paragraph:
@@ -63,13 +69,12 @@ def render_markdown(markdown: str) -> str:
             paragraph.clear()
 
     def close_list() -> None:
-        nonlocal in_list
-        if in_list:
+        while list_indents:
             rendered.append("</ul>")
-            in_list = False
+            list_indents.pop()
 
-    for line in markdown.splitlines():
-        stripped = line.strip()
+    for raw_line in markdown.splitlines():
+        stripped = raw_line.strip()
         if stripped.startswith("```"):
             flush_paragraph()
             close_list()
@@ -79,13 +84,11 @@ def render_markdown(markdown: str) -> str:
             in_code_block = not in_code_block
             continue
         if in_code_block:
-            code_lines.append(line)
+            code_lines.append(raw_line)
             continue
+        line = re.sub(r"<!--.*?-->", "", raw_line)
+        stripped = line.strip()
         if not stripped:
-            flush_paragraph()
-            close_list()
-            continue
-        if stripped.startswith("<!--") and stripped.endswith("-->"):
             flush_paragraph()
             close_list()
             continue
@@ -105,12 +108,16 @@ def render_markdown(markdown: str) -> str:
             level = len(match.group(1))
             rendered.append(f"<h{level}>{_render_inline(match.group(2))}</h{level}>")
             continue
-        if match := re.fullmatch(r"[-*]\s+(.+)", stripped):
+        if match := re.match(r"^(\s*)[-*]\s+(.+)$", line):
             flush_paragraph()
-            if not in_list:
+            indent = len(match.group(1).expandtabs(4))
+            while list_indents and indent < list_indents[-1]:
+                rendered.append("</ul>")
+                list_indents.pop()
+            if not list_indents or indent > list_indents[-1]:
                 rendered.append("<ul>")
-                in_list = True
-            rendered.append(f"<li>{_render_inline(match.group(1))}</li>")
+                list_indents.append(indent)
+            rendered.append(f"<li>{_render_inline(match.group(2))}</li>")
             continue
         close_list()
         paragraph.append(stripped)
@@ -233,7 +240,7 @@ def _render_page(markdown: str) -> str:
 body {{ margin: 0; }} article {{ max-width: 770px; margin: 0 auto; padding: 40px clamp(20px, 5vw, 56px); line-height: 1.55; }}
 article h1 {{ font-size: 2rem; }} article h2 {{ margin-top: 30px; }} article h3 {{ margin-top: 24px; }}
 article details {{ margin: 12px 0; border: 1px solid #cedbe0; border-radius: 7px; background: white; overflow: hidden; }}
-article summary {{ padding: 12px 15px; cursor: pointer; }} article details > :not(summary) {{ margin-left: 15px; margin-right: 15px; }}
+article summary {{ padding: 12px 15px; cursor: pointer; color: #c3cdd2; }} article details[open] summary {{ color: #17232b; }} article details > :not(summary) {{ margin-left: 15px; margin-right: 15px; }}
 article img {{ max-width: 100%; height: auto; border-radius: 6px; }} article code {{ padding: .1em .3em; border-radius: 4px; background: #eaf0f2; }}
 article pre {{ padding: 14px; overflow: auto; border-radius: 6px; background: #eaf0f2; }} article pre code {{ padding: 0; }} article a {{ color: #0d666c; }}
 </style></head><body>
