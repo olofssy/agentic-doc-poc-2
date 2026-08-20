@@ -1,6 +1,6 @@
-# Access Control Policy, version 4
+# Policy för åtkomstkontroll, version 4
 
-## ACP-4.2.1 — Privileged access at termination
+## ACP-4.2.1 — Privilegierad åtkomst vid avslut
 
-Privileged access must be disabled immediately when the termination time is
-recorded.
+Privilegierad åtkomst ska inaktiveras omedelbart när avslutstidpunkten
+registreras.

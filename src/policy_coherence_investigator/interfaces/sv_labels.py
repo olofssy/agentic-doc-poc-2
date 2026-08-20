@@ -41,6 +41,28 @@ _LABELS_SV: dict[str, str] = {
         "Oförenliga tidsgränser för inaktivering av personalåtkomst"
     ),
     "no_contractor_policy_exists": "Ingen konsultpolicy finns",
+    # retrieval.corpus.DocumentManifest.document_type / authority_level values.
+    # These flow into the model prompt (investigation/prompts.py) unchanged; only
+    # their UI badge display is translated here.
+    "policy": "Policy",
+    "procedure": "Rutin",
+    "standard": "Standard",
+    "definitions": "Definitioner",
+    "addendum": "Tillägg",
+    "governance": "Styrning",
+    "corporate_policy": "Företagspolicy",
+    "corporate_standard": "Företagsstandard",
+    "local_addendum": "Lokalt tillägg",
+    # investigation.scope.WorkingScope population / access-type values
+    "employee": "Medarbetare",
+    "contractor": "Konsult",
+    "ordinary": "Ordinär",
+    "privileged": "Privilegierad",
+    # workflows.bounded_investigation termination reasons
+    "decision_complete": "Beslut fattat",
+    "retrieval_budget_exhausted": "Hämtningsbudget förbrukad",
+    "no_initial_evidence": "Inget initialt underlag",
+    "no_new_evidence": "Inget nytt underlag",
 }
 
 

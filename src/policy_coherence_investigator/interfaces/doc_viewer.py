@@ -227,8 +227,8 @@ def _render_page(markdown: str) -> str:
     """Render the read-only viewer shell with the current Markdown already inlined."""
     encoded_preview = json.dumps(render_markdown(markdown))
     return f"""<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Doc viewer</title><style>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dokumentvisare</title><style>
 :root {{ color-scheme: light; font-family: ui-sans-serif, system-ui, sans-serif; color: #17232b; background: #f4f7f8; }}
 body {{ margin: 0; }} article {{ max-width: 770px; margin: 0 auto; padding: 40px clamp(20px, 5vw, 56px); line-height: 1.55; }}
 article h1 {{ font-size: 2rem; }} article h2 {{ margin-top: 30px; }} article h3 {{ margin-top: 24px; }}
@@ -254,10 +254,12 @@ setInterval(pollForChanges, 1000);
 
 def main() -> None:
     """Start the read-only viewer without invoking a model or evaluation."""
-    parser = argparse.ArgumentParser(description="Render a local Markdown file with collapsible sections.")
-    parser.add_argument("path", type=Path, help="Markdown file to render.")
-    parser.add_argument("--host", default="127.0.0.1", help="Host interface to listen on.")
-    parser.add_argument("--port", type=int, default=8768, help="TCP port to listen on.")
+    parser = argparse.ArgumentParser(
+        description="Rendera en lokal Markdown-fil med hopfällbara sektioner."
+    )
+    parser.add_argument("path", type=Path, help="Markdown-fil att rendera.")
+    parser.add_argument("--host", default="127.0.0.1", help="Värdgränssnitt att lyssna på.")
+    parser.add_argument("--port", type=int, default=8768, help="TCP-port att lyssna på.")
     args = parser.parse_args()
 
     markdown_path = args.path.resolve()
@@ -265,12 +267,12 @@ def main() -> None:
         raise SystemExit(f"Markdown file does not exist: {markdown_path}")
 
     server = ThreadingHTTPServer((args.host, args.port), make_request_handler(markdown_path))
-    print(f"Doc viewer running at http://{args.host}:{args.port} (watching {markdown_path})")
-    print("Press Ctrl+C to stop.")
+    print(f"Dokumentvisaren körs på http://{args.host}:{args.port} (bevakar {markdown_path})")
+    print("Tryck Ctrl+C för att stoppa.")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nDoc viewer stopped.")
+        print("\nDokumentvisaren stoppad.")
     finally:
         server.server_close()
 

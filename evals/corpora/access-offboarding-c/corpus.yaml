@@ -2,7 +2,7 @@ corpus_id: access-offboarding-c
 documents:
   - document_id: access_control_policy_v4
     document_type: policy
-    title: Access Control Policy
+    title: Policy för åtkomstkontroll
     path: policies/access-control-policy-v4.md
     effective_from: 2026-01-01
     status: current
@@ -10,7 +10,7 @@ documents:
     geography: [global]
   - document_id: hr_offboarding_procedure_v3
     document_type: procedure
-    title: HR Offboarding Procedure
+    title: HR-rutin för avslut
     path: policies/hr-offboarding-procedure-v3.md
     effective_from: 2025-10-01
     status: current
@@ -18,7 +18,7 @@ documents:
     geography: [global]
   - document_id: contractor_management_policy_v2
     document_type: policy
-    title: Contractor Management Policy
+    title: Policy för hantering av konsulter
     path: policies/contractor-management-policy-v2.md
     effective_from: 2025-10-01
     status: current
@@ -26,7 +26,7 @@ documents:
     geography: [global]
   - document_id: identity_definitions_v2
     document_type: definitions
-    title: Identity and Access Definitions
+    title: Definitioner för identitet och åtkomst
     path: policies/identity-definitions-v2.md
     effective_from: 2026-01-01
     status: current
@@ -34,7 +34,7 @@ documents:
     geography: [global]
   - document_id: privileged_access_standard_v2
     document_type: standard
-    title: Privileged Access Standard
+    title: Standard för privilegierad åtkomst
     path: policies/privileged-access-standard-v2.md
     effective_from: 2026-01-01
     status: current
@@ -42,7 +42,7 @@ documents:
     geography: [global]
   - document_id: emergency_access_procedure_v2
     document_type: procedure
-    title: Emergency Access Procedure
+    title: Rutin för nödåtkomst
     path: policies/emergency-access-procedure-v2.md
     effective_from: 2025-07-01
     status: current
@@ -50,7 +50,7 @@ documents:
     geography: [global]
   - document_id: remote_work_policy_v2
     document_type: policy
-    title: Remote Work Policy
+    title: Policy för distansarbete
     path: policies/remote-work-policy-v2.md
     effective_from: 2025-05-01
     status: current
@@ -58,7 +58,7 @@ documents:
     geography: [global]
   - document_id: facilities_access_policy_v2
     document_type: policy
-    title: Facilities Access Policy
+    title: Policy för åtkomst till lokaler
     path: policies/facilities-access-policy-v2.md
     effective_from: 2025-06-01
     status: current
@@ -66,7 +66,7 @@ documents:
     geography: [global]
   - document_id: nordic_access_addendum_v1
     document_type: addendum
-    title: Nordic Access Addendum
+    title: Nordiskt tillägg för åtkomst
     path: policies/nordic-access-addendum-v1.md
     effective_from: 2026-02-01
     status: current
@@ -74,7 +74,7 @@ documents:
     geography: [sweden, norway, denmark, finland]
   - document_id: information_retention_policy_v2
     document_type: policy
-    title: Information Retention Policy
+    title: Policy för informationsbevarande
     path: policies/information-retention-policy-v2.md
     effective_from: 2025-04-01
     status: current

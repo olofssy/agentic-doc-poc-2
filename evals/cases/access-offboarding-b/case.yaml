@@ -1,8 +1,8 @@
 case_id: access-offboarding-b
 corpus_id: access-offboarding-b
 question: >
-  Do ordinary employee and privileged employee access-revocation deadlines
-  conflict after termination?
+  Krockar tidsgränserna för att inaktivera ordinär respektive privilegierad
+  medarbetaråtkomst efter avslut?
 review_context:
   as_of_date: 2026-08-16
   geography: global

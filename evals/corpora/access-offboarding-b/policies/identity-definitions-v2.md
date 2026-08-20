@@ -1,6 +1,7 @@
-# Identity and Access Definitions, version 2
+# Definitioner för identitet och åtkomst, version 2
 
-## IDD-2.5 — Privileged access
+## IDD-2.5 — Privilegierad åtkomst
 
-Privileged access is access that can administer a corporate system or alter its
-security configuration. Ordinary employee accounts do not grant privileged access.
+Privilegierad åtkomst är åtkomst som kan administrera ett företagssystem
+eller ändra dess säkerhetskonfiguration. Ordinära medarbetarkonton ger inte
+privilegierad åtkomst.

@@ -1,6 +1,6 @@
-# Access Control Policy, version 4
+# Policy för åtkomstkontroll, version 4
 
-## ACP-4.2.1 — Employee access at termination
+## ACP-4.2.1 — Medarbetares åtkomst vid avslut
 
-Employee accounts must be disabled within 24 hours of the recorded termination
-time.
+Medarbetarkonton ska inaktiveras inom 24 timmar från den registrerade
+avslutstidpunkten.

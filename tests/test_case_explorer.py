@@ -66,5 +66,5 @@ def test_explorer_renders_the_human_resolution_guide_without_opening_documents()
     page = render_explorer_page(load_explorer_cases(), "access-offboarding-c")
 
     assert "Mänsklig lösningsguide" in page
-    assert "not that no contractor policy exists" in page
+    assert "inte att ingen konsultpolicy finns" in page
     assert page.index("Mänsklig lösningsguide") < page.index("Policykorpus")

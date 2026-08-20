@@ -28,8 +28,8 @@ from policy_coherence_investigator.workflows.bounded_investigation import _retri
 CORPUS_DIRECTORY = Path("evals/corpora/access-offboarding-b")
 CORPUS_A_DIRECTORY = Path("evals/corpora/access-offboarding-a")
 QUESTION = (
-    "Do our currently effective policies coherently define when employee, contractor, "
-    "and privileged access must be disabled after termination?"
+    "Definierar våra gällande policyer samstämmigt när privilegierad åtkomst ska "
+    "inaktiveras jämfört med kontonas allmänna hantering efter avslut?"
 )
 
 
@@ -199,7 +199,7 @@ def _multi_step_results() -> tuple[InvestigationResult, InvestigationResult]:
                 "An ordinary-employee policy is needed to compare its deadline with the "
                 "privileged-access rule."
             ),
-            query="ordinary employee account termination deadline",
+            query="HR begär att ordinära medarbetarkonton inaktiveras avslutstidpunkten",
         ),
     )
     final_result = InvestigationResult(

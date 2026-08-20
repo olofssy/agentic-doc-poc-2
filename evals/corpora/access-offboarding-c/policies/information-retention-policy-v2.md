@@ -1,6 +1,6 @@
-# Information Retention Policy, version 2
+# Policy för informationsbevarande, version 2
 
-## IRP-8.2 — Departing-worker records
+## IRP-8.2 — Register över avgående medarbetare
 
-HR offboarding records must be retained for seven years after a worker leaves the
-organisation.
+HR:s avslutsdokumentation ska bevaras i sju år efter att en medarbetare har
+lämnat organisationen.

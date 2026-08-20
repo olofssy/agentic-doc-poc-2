@@ -1,6 +1,6 @@
-# Nordic Access Addendum, version 1
+# Nordiskt tillägg för åtkomst, version 1
 
-## NAA-2.4 — Swedish employee accounts
+## NAA-2.4 — Svenska medarbetarkonton
 
-For employees employed in Sweden, ordinary application accounts must be disabled
-within four hours of the recorded termination time.
+För medarbetare anställda i Sverige ska ordinära applikationskonton
+inaktiveras inom fyra timmar från den registrerade avslutstidpunkten.

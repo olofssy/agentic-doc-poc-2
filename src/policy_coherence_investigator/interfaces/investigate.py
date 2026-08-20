@@ -13,6 +13,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from policy_coherence_investigator.infrastructure import build_chat_model
+from policy_coherence_investigator.interfaces.sv_labels import humanize_sv
 from policy_coherence_investigator.investigation import (
     EvidenceNeed,
     InvestigationLedger,
@@ -132,50 +133,57 @@ def print_investigation_report(report: InvestigationRunReport, output_format: st
     if output_format == "json":
         print(json.dumps(report.as_dict(), indent=2))
         return
-    category = report.result.category.value if report.result is not None else "none"
+    category = humanize_sv(report.result.category.value) if report.result is not None else "ingen"
     follow_up_kinds = ",".join(
-        evidence_need.kind.value for evidence_need in report.requested_evidence_needs
-    ) or "none"
+        humanize_sv(evidence_need.kind.value) for evidence_need in report.requested_evidence_needs
+    ) or "inga"
     print(
-        f"category={category} | corpus={report.corpus_id} | "
-        f"retrievals={report.retrieval_count}/{report.retrieval_budget} | "
-        f"followups={follow_up_kinds} | termination={report.termination_reason}"
+        f"kategori={category} | korpus={report.corpus_id} | "
+        f"hämtningar={report.retrieval_count}/{report.retrieval_budget} | "
+        f"uppföljningar={follow_up_kinds} | "
+        f"avslutsorsak={humanize_sv(report.termination_reason)}"
     )
     if report.result is None:
-        print("  summary: No structured review was produced.")
+        print("  sammanfattning: Ingen strukturerad granskning producerades.")
         return
-    print(f"  summary: {textwrap.shorten(report.result.summary, width=180, placeholder='…')}")
+    print(
+        f"  sammanfattning: {textwrap.shorten(report.result.summary, width=180, placeholder='…')}"
+    )
     for finding in report.result.findings:
         citations = ", ".join(
             f"{citation.document_id}/{citation.clause_id}" for citation in finding.citations
         )
-        print(f"  finding: {finding.finding_id} | citations={citations}")
+        print(f"  fynd: {humanize_sv(finding.finding_id)} | underlag={citations}")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run one explicit, paid, oracle-free policy-coherence investigation."""
 
-    parser = argparse.ArgumentParser(description="Investigate a policy-coherence question.")
-    parser.add_argument("--question", required=True, help="Natural-language policy question.")
+    parser = argparse.ArgumentParser(description="Utred en policykoherensfråga.")
+    parser.add_argument(
+        "--question", required=True, help="Policyfråga i naturligt språk."
+    )
     parser.add_argument(
         "--corpus",
         type=Path,
         required=True,
-        help="Directory containing corpus.yaml.",
+        help="Katalog som innehåller corpus.yaml.",
     )
-    parser.add_argument("--as-of", type=date.fromisoformat, required=True, help="YYYY-MM-DD.")
-    parser.add_argument("--geography", required=True, help="Review geography, such as global.")
+    parser.add_argument("--as-of", type=date.fromisoformat, required=True, help="ÅÅÅÅ-MM-DD.")
+    parser.add_argument(
+        "--geography", required=True, help="Granskningens geografi, till exempel global."
+    )
     parser.add_argument(
         "--population",
         action="append",
         required=True,
-        help="In-scope population; repeat for more than one.",
+        help="Population i omfånget; upprepa för fler än en.",
     )
     parser.add_argument(
         "--access-type",
         action="append",
         required=True,
-        help="In-scope access type; repeat for more than one.",
+        help="Åtkomsttyp i omfånget; upprepa för fler än en.",
     )
     parser.add_argument("--retrieval-budget", type=_positive_int, default=3)
     parser.add_argument("--provider", choices=("openai", "anthropic"))
@@ -200,7 +208,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 def _positive_int(value: str) -> int:
     parsed = int(value)
     if parsed < 1:
-        raise argparse.ArgumentTypeError("must be at least 1")
+        raise argparse.ArgumentTypeError("måste vara minst 1")
     return parsed
 
 

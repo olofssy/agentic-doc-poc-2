@@ -1,6 +1,6 @@
-# Contractor Management Policy, version 2
+# Policy för hantering av konsulter, version 2
 
-## CMP-6.4 — Contractor accounts
+## CMP-6.4 — Konsultkonton
 
-The sponsoring manager must request disabling ordinary contractor accounts within
-24 hours of the recorded contract termination time.
+Den ansvariga chefen ska begära att ordinära konsultkonton inaktiveras inom
+24 timmar från den registrerade tidpunkten för avtalets upphörande.

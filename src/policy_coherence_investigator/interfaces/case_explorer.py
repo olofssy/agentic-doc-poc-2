@@ -416,8 +416,8 @@ def _render_document(document: LoadedPolicyDocument, explorer_case: ExplorerCase
     )
     metadata_badges = "".join(
         (
-            _badge(manifest.document_type.replace("_", " "), "meta"),
-            _badge(manifest.authority_level.replace("_", " "), "meta"),
+            _badge(humanize_sv(manifest.document_type), "meta"),
+            _badge(humanize_sv(manifest.authority_level), "meta"),
             _badge(f"Gäller från {manifest.effective_from.isoformat()}", "meta"),
             _badge(", ".join(manifest.geography), "meta"),
             applicability_badge,

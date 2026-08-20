@@ -1,6 +1,6 @@
-# Privileged Access Standard, version 2
+# Standard för privilegierad åtkomst, version 2
 
-## PAS-3.1 — Privileged access at termination
+## PAS-3.1 — Privilegierad åtkomst vid avslut
 
-Privileged access must be disabled immediately when the termination time is
-recorded.
+Privilegierad åtkomst ska inaktiveras omedelbart när avslutstidpunkten
+registreras.
