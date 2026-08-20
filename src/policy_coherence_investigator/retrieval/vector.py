@@ -95,7 +95,10 @@ class OpenAIEmbeddingClient:
         if self._client is None:
             from langchain_openai import OpenAIEmbeddings
 
-            self._client = OpenAIEmbeddings(model=self.model_id, api_key=self.api_key)
+            kwargs: dict[str, object] = {"model": self.model_id}
+            if self.api_key is not None:
+                kwargs["api_key"] = self.api_key
+            self._client = OpenAIEmbeddings(**kwargs)
         return self._client
 
 

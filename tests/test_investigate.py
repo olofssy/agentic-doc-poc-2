@@ -16,7 +16,7 @@ from policy_coherence_investigator.investigation import (
     RetrievalRecord,
     WorkingScope,
 )
-from policy_coherence_investigator.retrieval import load_policy_corpus
+from policy_coherence_investigator.retrieval import LexicalClauseRetriever, load_policy_corpus
 
 CORPUS_DIRECTORY = Path("evals/corpora/access-offboarding-a")
 
@@ -32,14 +32,19 @@ def test_run_investigation_uses_the_supplied_question_and_scope_without_an_oracl
         "termination_reason": "decision_complete",
     }
 
+    retriever = LexicalClauseRetriever()
     with (
         patch(
             "policy_coherence_investigator.interfaces.investigate.build_chat_model"
         ) as model_factory,
         patch(
+            "policy_coherence_investigator.interfaces.investigate._build_bounded_retriever",
+            return_value=retriever,
+        ),
+        patch(
             "policy_coherence_investigator.interfaces.investigate.build_bounded_investigation_graph",
             return_value=graph,
-        ),
+        ) as graph_factory,
     ):
         report = run_investigation(
             question=" Do contractor offboarding policies conflict? ",
@@ -54,6 +59,7 @@ def test_run_investigation_uses_the_supplied_question_and_scope_without_an_oracl
     assert report.result == result
     assert report.question == "Do contractor offboarding policies conflict?"
     model_factory.assert_called_once_with("openai")
+    assert graph_factory.call_args.kwargs["retriever"] is retriever
     initial_state = graph.invoke.call_args.args[0]
     assert initial_state["question"] == "Do contractor offboarding policies conflict?"
     assert initial_state["working_scope"].populations == ["contractor"]

@@ -19,8 +19,18 @@ from policy_coherence_investigator.investigation import (
     InvestigationResult,
     WorkingScope,
 )
-from policy_coherence_investigator.retrieval import PolicyClause, load_policy_corpus
+from policy_coherence_investigator.retrieval import (
+    OpenAIEmbeddingClient,
+    PolicyClause,
+    PolicyCorpus,
+    VectorClauseRetriever,
+    build_vector_retriever,
+    load_policy_corpus,
+)
 from policy_coherence_investigator.workflows import build_bounded_investigation_graph
+
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+_VECTOR_CACHE_DIRECTORY = _REPOSITORY_ROOT / "local" / "vector-cache"
 
 
 @dataclass(frozen=True)
@@ -67,6 +77,17 @@ class InvestigationRunReport:
         }
 
 
+def _build_bounded_retriever(corpus: PolicyCorpus) -> VectorClauseRetriever:
+    """Embed the corpus with OpenAI so the bounded investigation can bridge vocabulary gaps."""
+
+    embedding_client = OpenAIEmbeddingClient()
+    cache_path = (
+        _VECTOR_CACHE_DIRECTORY / f"{corpus.corpus_id}-{embedding_client.model_id}.json"
+    )
+    retriever, _ = build_vector_retriever(corpus.clauses, embedding_client, cache_path=cache_path)
+    return retriever
+
+
 def run_investigation(
     *,
     question: str,
@@ -92,7 +113,8 @@ def run_investigation(
         as_of_date=as_of_date,
     )
     model = build_chat_model(provider)
-    state = build_bounded_investigation_graph(model, corpus).invoke(
+    retriever = _build_bounded_retriever(corpus)
+    state = build_bounded_investigation_graph(model, corpus, retriever=retriever).invoke(
         {
             "question": normalized_question,
             "working_scope": working_scope,
