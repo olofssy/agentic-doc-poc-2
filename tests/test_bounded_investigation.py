@@ -107,7 +107,7 @@ def test_bounded_graph_stops_when_the_initial_retrieval_uses_the_full_budget() -
 def test_follow_up_retrieval_selects_new_clauses_before_applying_its_limit() -> None:
     corpus = load_policy_corpus(CORPUS_A_DIRECTORY)
     scope = _scope(["employee", "contractor"])
-    query = "contractor offboarding policies conflict access termination"
+    query = "konsult avslut policyer konflikt åtkomst inaktivering personal privilegierad"
     ranked = rank_clauses(
         query,
         filter_applicable_clauses(

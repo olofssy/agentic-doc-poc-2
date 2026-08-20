@@ -1,5 +1,5 @@
-# Access Control Policy, version 3
+# Policy för åtkomstkontroll, version 3
 
-## ACP-3.9.1 — Legacy termination timing
+## ACP-3.9.1 — Tidigare tidsgräns för avslut
 
-Access should be removed by the end of the last working day.
+Åtkomst bör tas bort senast vid slutet av den sista arbetsdagen.

@@ -1,8 +1,8 @@
 case_id: access-offboarding-a
 corpus_id: access-offboarding-a
 question: >
-  Do the workforce and contractor offboarding policies conflict on the deadline
-  for disabling ordinary contractor access?
+  Krockar policyerna för avslut av personal och konsulter när det gäller
+  tidsgränsen för att inaktivera ordinär konsultåtkomst?
 review_context:
   as_of_date: 2026-08-16
   geography: global

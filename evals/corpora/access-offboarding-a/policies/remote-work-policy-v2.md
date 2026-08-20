@@ -1,5 +1,6 @@
-# Remote Work Policy, version 2
+# Policy för distansarbete, version 2
 
-## RWP-5.2 — Equipment return
+## RWP-5.2 — Återlämning av utrustning
 
-Remote workers must return company equipment by their final working day.
+Distansarbetare ska återlämna företagets utrustning senast sin sista
+arbetsdag.

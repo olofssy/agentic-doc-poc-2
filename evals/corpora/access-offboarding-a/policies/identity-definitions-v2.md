@@ -1,11 +1,11 @@
-# Identity and Access Definitions, version 2
+# Definitioner för identitet och åtkomst, version 2
 
-## IDD-2.1 — Workforce identity
+## IDD-2.1 — Personalidentitet
 
-A workforce identity is an identity assigned to an employee or contractor who is
-authorised to use a corporate system.
+En personalidentitet är en identitet som tilldelats en medarbetare eller
+konsult som är behörig att använda ett företagssystem.
 
-## IDD-2.5 — Privileged access
+## IDD-2.5 — Privilegierad åtkomst
 
-Privileged access is access that can administer a corporate system or alter its
-security configuration.
+Privilegierad åtkomst är åtkomst som kan administrera ett företagssystem
+eller ändra dess säkerhetskonfiguration.

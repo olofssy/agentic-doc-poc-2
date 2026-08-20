@@ -105,11 +105,11 @@ def test_workbench_passes_only_the_selected_case_corpus_and_form_values_to_the_r
 def test_workbench_renders_case_explorer_and_single_submission_panel() -> None:
     page = render_workbench_page(load_explorer_cases(), "access-offboarding-a")
 
-    assert "Demo evaluation notes" in page
+    assert "Demoanteckningar för utvärdering" in page
     assert "Investigate a policy question" in page
     assert 'method="post" action="/investigate"' in page
-    assert "Human resolution guide" in page
-    assert "employee" in page
+    assert "Mänsklig lösningsguide" in page
+    assert "medarbetare" in page
     assert "contractor" in page
     assert "Case explorer" in page
     assert "Ask a policy-coherence question" in page

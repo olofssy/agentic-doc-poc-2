@@ -1,6 +1,6 @@
-# HR Offboarding Procedure, version 3
+# HR-rutin för avslut, version 3
 
-## HOP-7.3 — Ordinary employee accounts
+## HOP-7.3 — Ordinära medarbetarkonton
 
-HR must request disabling ordinary employee accounts within 24 hours of the
-recorded termination time.
+HR ska begära att ordinära medarbetarkonton inaktiveras inom 24 timmar från
+den registrerade avslutstidpunkten.

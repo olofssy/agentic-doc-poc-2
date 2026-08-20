@@ -40,13 +40,13 @@ def test_explorer_loads_oracle_data_only_for_human_demo_notes() -> None:
 def test_explorer_renders_oracle_notes_and_keeps_policy_documents_collapsed() -> None:
     page = render_explorer_page(load_explorer_cases(), "access-offboarding-a")
 
-    assert "Demo evaluation notes" in page
-    assert "Decisive evidence" in page
-    assert "Scope resolver" in page
-    assert "Excluded by status" in page
-    assert "Outside review geography" in page
-    assert "Retrieval target: policy rule" in page
-    assert "Retrieval target: term definition" in page
+    assert "Demoanteckningar för utvärdering" in page
+    assert "Avgörande underlag" in page
+    assert "Omfångslösare" in page
+    assert "Utesluten på grund av status" in page
+    assert "Utanför granskningsgeografin" in page
+    assert "Hämtningsmål: policyregel" in page
+    assert "Hämtningsmål: termdefinition" in page
     assert '<details class="policy-document">' in page
     assert '<details class="policy-document" open>' not in page
     assert "oracle.yaml" not in page
@@ -55,8 +55,8 @@ def test_explorer_renders_oracle_notes_and_keeps_policy_documents_collapsed() ->
 def test_retrieval_role_is_visible_in_a_collapsed_document_header() -> None:
     page = render_explorer_page(load_explorer_cases(), "access-offboarding-a")
 
-    header_start = page.index("Access Control Policy")
-    role_start = page.index("Retrieval target: policy rule", header_start)
+    header_start = page.index("Policy för åtkomstkontroll")
+    role_start = page.index("Hämtningsmål: policyregel", header_start)
     document_body_start = page.index('<div class="document-body">', header_start)
 
     assert header_start < role_start < document_body_start
@@ -65,6 +65,6 @@ def test_retrieval_role_is_visible_in_a_collapsed_document_header() -> None:
 def test_explorer_renders_the_human_resolution_guide_without_opening_documents() -> None:
     page = render_explorer_page(load_explorer_cases(), "access-offboarding-c")
 
-    assert "Human resolution guide" in page
+    assert "Mänsklig lösningsguide" in page
     assert "not that no contractor policy exists" in page
-    assert page.index("Human resolution guide") < page.index("Policy corpus")
+    assert page.index("Mänsklig lösningsguide") < page.index("Policykorpus")

@@ -20,8 +20,8 @@ from policy_coherence_investigator.workflows import build_fixed_review_graph
 
 CORPUS_DIRECTORY = Path("evals/corpora/access-offboarding-a")
 QUESTION = (
-    "Do our currently effective policies coherently define when employee, contractor, "
-    "and privileged access must be disabled after termination?"
+    "Definierar våra avslutsregler för personalidentiteter och konsultuppdrag "
+    "samstämmigt när konsultens åtkomst till företagets system ska inaktiveras vid avslut?"
 )
 
 

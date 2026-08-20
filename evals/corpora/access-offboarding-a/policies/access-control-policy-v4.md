@@ -1,11 +1,11 @@
-# Access Control Policy, version 4
+# Policy för åtkomstkontroll, version 4
 
-## ACP-4.2.1 — Terminated workforce identities
+## ACP-4.2.1 — Avslutade personalidentiteter
 
-Access assigned to a workforce identity must be disabled within 24 hours of the
-recorded termination time.
+Åtkomst som tilldelats en personalidentitet ska inaktiveras inom 24 timmar från
+den registrerade avslutstidpunkten.
 
-## ACP-4.2.2 — Privileged identities
+## ACP-4.2.2 — Privilegierade identiteter
 
-Privileged access must be disabled immediately when the termination time is
-recorded.
+Privilegierad åtkomst ska inaktiveras omedelbart när avslutstidpunkten
+registreras.

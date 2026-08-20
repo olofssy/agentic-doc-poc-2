@@ -1,7 +1,7 @@
-# Contractor Management Policy, version 2
+# Policy för hantering av konsulter, version 2
 
-## CMP-6.4 — Contract completion
+## CMP-6.4 — Avslutat uppdrag
 
-When a contractor engagement ends, the sponsoring manager may retain the
-contractor's corporate-system access for up to five calendar days after the
-contract termination time to complete knowledge transfer.
+När ett konsultuppdrag avslutas får den ansvariga chefen behålla konsultens
+åtkomst till företagets system i upp till fem kalenderdagar efter
+avtalets sluttidpunkt för att slutföra kunskapsöverföring.

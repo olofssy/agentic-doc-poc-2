@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from .contracts import ClauseRetriever, RetrievedClause
 from .corpus import PolicyClause
 
-TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
+TOKEN_PATTERN = re.compile(r"[a-z0-9åäö]+")
 
 
 def tokenize(text: str) -> tuple[str, ...]:

@@ -2,45 +2,45 @@
 # this with oracle data, but neither source may reach investigator prompts or runs.
 cases:
   - case_id: access-offboarding-a
-    display_name: Contractor deadline conflicts with the workforce rule
+    display_name: Konsultens tidsgräns krockar med personalregeln
     summary: >
-      This case tests whether the investigator resolves the meaning of workforce
-      identity before comparing a global revocation deadline with a contractor exception.
+      Detta fall testar om utredaren löser upp betydelsen av personalidentitet
+      innan en global inaktiveringsfrist jämförs med ett konsultundantag.
     capability_tags:
-      - controlled policy retrieval
-      - terminology and population scope
-      - cross-policy deadline comparison
-      - confirmed-conflict identification
+      - kontrollerad policyhämtning
+      - terminologi och populationsomfång
+      - jämförelse av tidsgränser mellan policyer
+      - identifiering av bekräftad konflikt
     resolution_guide: >
-      Compare the workforce revocation deadline with the contractor retention period,
-      then retrieve the definition of workforce identity. The definition makes the two
-      rules concurrently applicable to contractors, so the deadlines are incompatible.
+      Jämför personalens inaktiveringsfrist med konsultens karensperiod,
+      hämta sedan definitionen av personalidentitet. Definitionen gör att båda
+      reglerna gäller samtidigt för konsulter, så tidsgränserna är oförenliga.
     document_roles:
       - document_id: access_control_policy_v4
         kind: policy_rule
-        explanation: Compare the global workforce revocation requirement.
+        explanation: Jämför det globala kravet på inaktivering för personal.
       - document_id: contractor_management_policy_v2
         kind: policy_rule
-        explanation: Compare the contractor-specific retention rule.
+        explanation: Jämför den konsultspecifika karensregeln.
       - document_id: identity_definitions_v2
         kind: term_definition
-        explanation: Resolve whether contractors are workforce identities.
+        explanation: Avgör om konsulter räknas som personalidentiteter.
     clause_roles:
       - reference:
           document_id: access_control_policy_v4
           clause_id: ACP-4.2.1
-        label: Conflict evidence
-        explanation: Sets the workforce revocation deadline.
+        label: Konfliktbevis
+        explanation: Anger inaktiveringsfristen för personal.
       - reference:
           document_id: contractor_management_policy_v2
           clause_id: CMP-6.4
-        label: Conflict evidence
-        explanation: Permits contractor access after termination.
+        label: Konfliktbevis
+        explanation: Tillåter konsultåtkomst efter avslut.
       - reference:
           document_id: identity_definitions_v2
           clause_id: IDD-2.1
-        label: Scope resolver
-        explanation: Establishes that contractors are workforce identities.
+        label: Omfångslösare
+        explanation: Fastställer att konsulter är personalidentiteter.
 
   - case_id: access-offboarding-b
     display_name: Apparent deadline conflict resolves by access type
