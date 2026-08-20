@@ -48,8 +48,8 @@ Spektrum: Linear workflow -> non-linear -> agentic?
 Dimensioner
 - Flödesvägar i grafen (linjär, branching, loopar),
 - Actions
-    - antal
-    - permissions  & "flexibilitet" - t.ex. get_time vs rag_retrieve(...) vs readonly-DB vs sudo bash shell?
+    - antal: få -> många
+    - åtkomsts-/behörightsnivåer och flexibilitet - t.ex. get_time vs rag_retrieve(...) vs readonly-DB vs sudo bash shell?
 - (State vs stateless?)
 
 </details>
@@ -58,22 +58,30 @@ Dimensioner
 <summary><strong>Valt use case</strong></summary>
 
 Två idéer:
-- Bedömning av garantiärenden för industripump  <!-- Input: Garanti-claim + produktbeskrivnign med villkor; Miljö: operating logs,  -->
-    - input: Garanti-claim + produktbeskrivnign med villkor
+- (1) "Warranty claim investigator" 
+    - Bedömning av garantiärenden för industripump  <!--Avslogs pga svårt motivera RAG-->
+    - input: Garanti-formulär från kund + produktbeskrivning med villkor
     - miljö / actions: läs inspektionsrapporter, driftsloggar
     - output: bevilja / avslå / eskalera inkl. motivering med dokumentreferenser
 
-- *Valt: Bedömning av intern "policykoherens" på företag*
-    - input: Fråga ("Vad gäller för system accesser vid uppsägning")
-    - miljö / actions: Sök(RAG) & läs i polcy-arkiv
+- **(2) "Policy coherence investigator" 
+    - Vad: Bedömning av intern "policykoherens" på företag**
+    - input: Fråga ("Är våra polcies kring återkallande systemaccesser vid uppsägning tvetydiga?")
+    - miljö / actions: Sök(RAG) & läs i policy-arkiv
     - output: flagga (in)koherens alt. oklart inkl. motivering med dokumentreferenser
-
+    - Möjliga flöden:
+        - Initial retrive+review -> finish
+        - Initial retrive+review -> (loop: re-retrieve -> re-review) -> finish
+    
 Hur agentisk? Dimensionerna igen:
 - Flödesvägar i grafen (linjär, branching, *loopar*),
 - Actions
-    - antal
-    - permissions  & "flexibilitet" - t.ex. get_time() vs *rag_retrieve(...)* vs readonly-DB vs bash shell?
-- (State vs stateless?)
+    - antal=1
+    - åtkomsts-/behörightsnivåer  & flexibilitet - t.ex. get_time() vs *rag_retrieve(...)* vs readonly-DB vs bash shell?
+- (*State* vs stateless?)
+
+
+- TODO: Se use-case exploren: http://127.0.0.1:8767
 
 </details>
 
@@ -82,8 +90,11 @@ Hur agentisk? Dimensionerna igen:
 
 <!-- Syfte: Vad hade varit naturliga "nästa steg" om detta hade byggts som en faktiskt produkt?-->
 
+
 Att testa:
 - Större dataset, äkta dokument (utmaning: vad är ground-truth?)
+- Benchmarka mot baseline(s):
+    - Linjärt flöde med/utan RAG
 
 Integrera i produktionsmiljöer: hur exponeras dokument, hur lösa accesser etc?
 
